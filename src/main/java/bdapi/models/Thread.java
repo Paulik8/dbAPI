@@ -1,7 +1,11 @@
 package bdapi.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.maven.settings.Settings;
+
+import java.sql.Timestamp;
 
 public class Thread {
     private String author;
@@ -14,7 +18,7 @@ public class Thread {
     private int votes;
 
     @JsonCreator
-    public Thread(
+        public Thread(
             @JsonProperty("author") String author,
             @JsonProperty("created") String created,
             @JsonProperty("forum") String forum,
@@ -25,7 +29,18 @@ public class Thread {
             @JsonProperty("votes") int votes
     ) {
         this.author = author;
-        this.created = created;
+        //this.created = created;
+        if (created == null) {
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            this.created = timestamp.toInstant().toString();
+        } else {
+            this.created = created;
+
+        }
+//        if (created == null)
+//            this.created = null;
+//        else
+//            this.created = created.toInstant().toString();
         this.forum = forum;
         this.id = id;
         this.message = message;
@@ -45,11 +60,18 @@ public class Thread {
         this.author = author;
     }
 
-    public String getCreated() {
+    public String  getCreated() {
         return created;
     }
 
-    public void setCreated(String created) {
+    public void setCreated(String  created)
+    //{
+//        if (created == null)
+//            this.created = null;
+//        else
+//            this.created = created.toInstant().toString();
+//    }
+    {
         this.created = created;
     }
 
@@ -57,7 +79,7 @@ public class Thread {
         return forum;
     }
 
-    public void setForum() {
+    public void setForum(String forum) {
         this.forum = forum;
     }
 

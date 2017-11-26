@@ -3,6 +3,8 @@ package bdapi.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.sql.Timestamp;
+
 public class Post {
     private String author;
     private String created;
@@ -10,7 +12,7 @@ public class Post {
     private long id;
     private boolean isEdited;
     private String message;
-    private int thread;
+    private long thread;
     private long parent = 0;
 
     @JsonCreator
@@ -20,17 +22,28 @@ public class Post {
                 @JsonProperty("id") long id,
                 @JsonProperty("isEdited") boolean isEdited,
                 @JsonProperty("message") String message,
-                @JsonProperty("thread") int thread,
+                @JsonProperty("thread") long thread,
                 @JsonProperty("parent") long parent) {
 
         this.author = author;
-        this.created = created;
+        //this.created = created;
+        if (created == null) {
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            this.created = timestamp.toInstant().toString();
+        } else {
+            this.created = created;
+
+        }
         this.forum = forum;
         this.id = id;
         this.isEdited = isEdited;
         this.message = message;
         this.thread = thread;
         this.parent = parent;
+    }
+
+    public Post() {
+
     }
 
     public String  getAuthor() {
@@ -81,11 +94,11 @@ public class Post {
         this.message = message;
     }
 
-    public int getThread() {
+    public long getThread() {
         return thread;
     }
 
-    public void setThread(int thread) {
+    public void setThread(long thread) {
         this.thread = thread;
     }
 

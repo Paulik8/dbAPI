@@ -24,7 +24,6 @@ public class Forum {
     }
 
     public Forum() {
-
     }
 
     public long getPosts() {
