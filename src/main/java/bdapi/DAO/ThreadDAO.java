@@ -1,6 +1,7 @@
 package bdapi.DAO;
 
 import bdapi.models.Forum;
+import bdapi.models.Post;
 import bdapi.models.Thread;
 import bdapi.models.Vote;
 import org.apache.maven.settings.Settings;
@@ -12,10 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.swing.text.StyledEditorKit;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +25,7 @@ import java.util.TimeZone;
 public class ThreadDAO {
     private static final ThreadMapper THREAD_MAPPER = new ThreadMapper();
     private static final VoteMapper VOTE_MAPPER = new VoteMapper();
+    private static final PostMapper POST_MAPPER = new PostMapper();
     private final JdbcTemplate jdbc;
 
     @Autowired
@@ -132,6 +131,93 @@ public class ThreadDAO {
         return jdbc.queryForObject(SQL, VOTE_MAPPER, vote.getNickname());
     }
 
+    public List<Post> getPosts(long threadId, Integer limit, Integer since, String sort, Boolean desc) {
+        List<Object> myObj = new ArrayList<>();
+        if (sort == null || sort.equals("flat")) {
+            String myStr = "select * from posts where thread = ?";
+            myObj.add(threadId);
+            if (since != null) {
+                if (desc != null && desc) {
+                    myStr += " and id < ?";
+                } else {
+                    myStr += " and id > ?";
+                }
+                myObj.add(since);
+            }
+            myStr += " order by created ";
+            if (desc != null && desc) {
+                myStr += " desc, id desc ";
+            } else {
+                myStr += ", id";
+            }
+            if (limit != null) {
+                myStr += " limit ? ";
+                myObj.add(limit);
+            }
+
+            List<Post> result = jdbc.query(myStr
+                    , myObj.toArray(), POST_MAPPER);
+            return result;
+        } else if (sort.equals("tree")) {
+            String myStr = "select * from posts where thread = ?";
+            myObj.add(threadId);
+            if (since != null) {
+                if (desc != null && desc) {
+                    myStr += " and path < (select path from posts where id = ?) ";
+                } else {
+                    myStr += " and path > (select path from posts where id = ?) ";
+                }
+                myObj.add(since);
+            }
+            myStr += " order by path ";
+            if (desc != null && desc) {
+                myStr += " desc, id desc ";
+            }
+            if (limit != null) {
+                myStr += " limit ? ";
+                myObj.add(limit);
+            }
+
+            List<Post> result = jdbc.query(myStr
+                    , myObj.toArray(), POST_MAPPER);
+            return result;
+
+        } else {
+            //WORKING HERE
+            String myStr = "select * from posts where thread = ? ";
+            myObj.add(threadId);
+            if (since != null) {
+                if (desc != null && desc) {
+                    myStr += " and path[1] = ANY (select id from posts where parent = 0 and path < (select path from posts where id = ?) and thread = ? order by id desc limit ? ) ";
+
+                } else {
+                    myStr += " and path[1] = ANY (select id from posts where parent = 0 and path > (select path from posts where id = ?) and thread = ? order by id limit ? ) ";
+                }
+                myObj.add(since);
+                myObj.add(threadId);
+                myObj.add(limit);
+            } else if (limit != null) {
+                if (desc != null && desc) {
+                    myStr += " and path[1] = ANY (select id  from posts where parent = 0 and thread = ? order by id desc limit ? ) ";
+                } else {
+                    myStr += " and path[1] = ANY (select id  from posts where parent = 0 and thread = ? order by id limit ? ) ";
+                }
+                myObj.add(threadId);
+                myObj.add(limit);
+            }
+            myStr += " order by path ";
+            if (desc != null && desc) {
+                myStr += " desc ";
+            }
+            List<Post> result = jdbc.query(myStr
+                    , myObj.toArray(), POST_MAPPER);
+            return result;
+        }
+
+
+    }
+
+
     private static final class ThreadMapper implements RowMapper<Thread> {
         public Thread mapRow(ResultSet resultSet, int i) throws SQLException {
             Thread thread = new Thread();
@@ -149,6 +235,29 @@ public class ThreadDAO {
             thread.setId(resultSet.getInt("id"));
             thread.setVotes(resultSet.getInt("votes"));
             return thread;
+        }
+    }
+
+    private static final class PostMapper implements RowMapper<Post> {
+        public Post mapRow(ResultSet resultSet, int i) throws SQLException {
+            Post post = new Post();
+            post.setAuthor(resultSet.getString("author"));
+            post.setForum(resultSet.getString("forum"));
+            post.setIsEdited(resultSet.getBoolean("isedited"));
+            post.setMessage(resultSet.getString("message"));
+            post.setThread(resultSet.getLong("thread"));
+            post.setParent(resultSet.getLong("parent"));
+            //post.setPath((Object[])resultSet.getObject("path"));
+            Array path = resultSet.getArray("path");
+            post.setPath((Object[])path.getArray());
+            Timestamp created = resultSet.getTimestamp("created");
+            SimpleDateFormat format = new SimpleDateFormat(
+                    "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+            //format.setTimeZone(TimeZone.getTimeZone("UTC"));
+            post.setCreated(format.format(created));
+            // post.setCreated(resultSet.getString("created"));
+            post.setId(resultSet.getLong("id"));
+            return post;
         }
     }
 

@@ -13,7 +13,17 @@ public class Post {
     private boolean isEdited;
     private String message;
     private long thread;
+
+    public Object[] getPath() {
+        return path;
+    }
+
+    public void setPath(Object[] path) {
+        this.path = path;
+    }
+
     private long parent = 0;
+    private Object[] path;
 
     @JsonCreator
     public Post(@JsonProperty("author") String author,

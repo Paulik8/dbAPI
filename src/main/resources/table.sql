@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS "posts" (
   isedited BOOLEAN,
   forum    CITEXT REFERENCES forums (slug),
   created  TIMESTAMP WITH TIME ZONE,
-  thread INTEGER REFERENCES threads (id)
+  thread INTEGER REFERENCES threads (id),
+  path INT ARRAY
 );
 
 CREATE TABLE IF NOT EXISTS  "votes" (

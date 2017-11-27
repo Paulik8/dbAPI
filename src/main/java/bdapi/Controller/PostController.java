@@ -67,7 +67,6 @@ public class PostController {
         if (post == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find post"));
         }
-        System.out.println(body);
         if (body.getMessage() == null || body.getMessage().equals(post.getMessage())) {
             return ResponseEntity.ok(post);
         }

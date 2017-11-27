@@ -8,17 +8,15 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
+import javax.swing.*;
+import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 
 @Service
 @Transactional
@@ -31,16 +29,19 @@ public class PostDAO {
         this.jdbc = jdbc;
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void create (List<Post> posts) {
         Object[] object;
         String SQL = "insert into \"posts\" (author, forum, isedited, message, thread, parent, created) VALUES(?,?,?,?,?,?,?::timestamp) returning id";
         for (Post post : posts) {
+            Post parentPost = getPostbyId((int)post.getParent());
             post.setCreated(posts.get(0).getCreated());
             object = new Object[] {post.getAuthor(), post.getForum(), post.getIsEdited(), post.getMessage(), post.getThread(), post.getParent(), post.getCreated()};
             post.setId(jdbc.queryForObject(SQL, object, Long.class));
             //post.setId(jdbc.queryForObject(SQL, POST_MAPPER, post.getAuthor(), post.getForum(), post.getIsEdited(), post.getMessage(), post.getThread(), post.getParent(), post.getCreated()));
             final String SQL_posts = "update \"forums\" set posts = posts + 1 WHERE slug::citext = ?::citext";
             jdbc.update(SQL_posts, post.getForum());
+            setPath(parentPost, post);
         }
     };
 
@@ -51,6 +52,46 @@ public class PostDAO {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void setPath(Post parentPost, Post childPost) {
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbc.update(con -> {
+            PreparedStatement pst = con.prepareStatement(
+                    "update posts set" +
+                            "  path = ? " +
+                            "where id = ?",
+                    PreparedStatement.RETURN_GENERATED_KEYS);
+            if (childPost.getParent() == 0) {
+                pst.setArray(1, con.createArrayOf("int", (new Object[]{childPost.getId()}) ));
+            } else {
+                if (parentPost.getPath() == null) {
+                    ArrayList arr = new ArrayList<Object>(Arrays.asList(0));
+                    arr.add(childPost.getId());
+                    pst.setArray(1, con.createArrayOf("int", arr.toArray()));
+                } else {
+                    ArrayList arr = new ArrayList<Object>(Arrays.asList(parentPost.getPath()));
+                    arr.add(childPost.getId());
+                    pst.setArray(1, con.createArrayOf("int", arr.toArray()));
+                }
+            }
+            pst.setLong(2, childPost.getId());
+            return pst;
+        }, keyHolder);
+
+        //List<Object> obj = new ArrayList<>();
+//        Array arr;
+//        Object[] obj;
+//        if (childPost.getParent() == 0) {
+//            //obj.add(childPost.getId());
+//            obj = new Object[] {childPost.getId()};
+//        } else {
+//            //obj.add(parentPost.getPath());
+//            //obj.add(childPost.getId());
+//            obj = new Object[] {parentPost.getPath(), childPost.getId()};
+//        }
+//        String SQL = "update \"posts\" set path = ? where id = ?";
+//        jdbc.update(SQL,  obj, childPost.getId());
     }
 
     public void changeMessage(Integer id, String message) {
@@ -112,6 +153,9 @@ public class PostDAO {
             post.setMessage(resultSet.getString("message"));
             post.setThread(resultSet.getLong("thread"));
             post.setParent(resultSet.getLong("parent"));
+            Array path = resultSet.getArray("path");
+            //post.setPath((Object[]) resultSet.getObject("path"));
+            post.setPath((Object[])path.getArray());
             Timestamp created = resultSet.getTimestamp("created");
             SimpleDateFormat format = new SimpleDateFormat(
                     "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);

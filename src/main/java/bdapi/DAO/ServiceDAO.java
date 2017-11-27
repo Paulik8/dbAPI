@@ -34,6 +34,7 @@ public class ServiceDAO {
         }
     }
 
+
     public int getCountThreads() {
         try {
             String SQL = "SELECT count(*) FROM \"threads\"";

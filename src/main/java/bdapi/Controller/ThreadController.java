@@ -59,15 +59,16 @@ public class ThreadController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found this author"));
             }
         }
-        postDAO.create(posts);
 
         for (Post post : posts) {
+            Post checkPost = postDAO.getPostbyId((int)post.getParent());
             Post check = postDAO.getChild(post.getParent());
-            if (check == null &&
+            if ((checkPost == null || check == null) &&
                     post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("conflict"));
             }
         }
+        postDAO.create(posts);
         return ResponseEntity.status(HttpStatus.CREATED).body(posts);
     }
 
@@ -129,6 +130,21 @@ public class ThreadController {
         //if (getvote.getVoice() != 0)
 
         return ResponseEntity.ok(CheckIdOrSlug(slug_or_id));
+    }
+
+    @GetMapping(path = "/{slug_or_id}/posts")
+    public ResponseEntity getPosts(@PathVariable("slug_or_id") String slug_or_id,
+                                   @RequestParam(value = "limit", required = false) Integer limit,
+                                   @RequestParam(value = "sort", required = false) String sort,
+                                   @RequestParam(value = "desc", required = false) boolean desc,
+                                   @RequestParam(value = "since", required = false) Integer since
+                                    ) {
+        Thread thread;
+        thread = CheckIdOrSlug(slug_or_id);
+        if (thread == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find thread"));
+        }
+        return ResponseEntity.ok(threadDAO.getPosts(thread.getId(), limit, since, sort, desc));
     }
 
 }
