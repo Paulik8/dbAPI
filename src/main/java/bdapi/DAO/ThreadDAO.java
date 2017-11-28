@@ -4,7 +4,6 @@ import bdapi.models.Forum;
 import bdapi.models.Post;
 import bdapi.models.Thread;
 import bdapi.models.Vote;
-import org.apache.maven.settings.Settings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,7 +11,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.StyledEditorKit;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

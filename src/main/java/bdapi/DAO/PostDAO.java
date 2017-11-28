@@ -1,8 +1,6 @@
 package bdapi.DAO;
 
 import bdapi.models.Post;
-import javafx.geometry.Pos;
-import org.apache.maven.settings.Settings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -13,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.*;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;

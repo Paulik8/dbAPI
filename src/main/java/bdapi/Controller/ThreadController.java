@@ -8,7 +8,6 @@ import bdapi.models.Post;
 import bdapi.models.Thread;
 import bdapi.models.Vote;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

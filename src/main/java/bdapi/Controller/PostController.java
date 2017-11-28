@@ -4,7 +4,6 @@ import bdapi.DAO.ForumDAO;
 import bdapi.DAO.PostDAO;
 import bdapi.DAO.ThreadDAO;
 import bdapi.DAO.UserDAO;
-import bdapi.models.Forum;
 import bdapi.models.Message;
 import bdapi.models.Post;
 import bdapi.models.PostFull;

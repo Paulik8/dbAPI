@@ -1,9 +1,7 @@
 package bdapi.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.maven.settings.Settings;
 
 import java.sql.Timestamp;
 
