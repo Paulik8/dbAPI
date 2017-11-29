@@ -10,8 +10,8 @@ RUN apt-get install -y postgresql-$PGVER
 USER postgres
 
 RUN /etc/init.d/postgresql start &&\
-        psql --command "CREATE USER admin WITH SUPERUSER PASSWORD 'docker';" &&\
-         createdb -O admin api &&\
+        psql --command "CREATE USER admin WITH SUPERUSER PASSWORD '12345';" &&\
+         createdb -E UTF8 -T template0 -O admin 12345 &&\
           /etc/init.d/postgresql stop
 
           RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
@@ -30,14 +30,12 @@ VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
 USER root
 
-RUN apt-get install -y openjdk-8-jdk-headless maven
+RUN apt-get install -y openjdk-8-jdk-headless
+RUN apt-get-install -y maven
 
-ENV PGUSER=admin PGPASSWORD=docker PGHOST=127.0.0.1 PGPORT=5432 PGDATABASE=api
-ENV PARK_DB_ROOT=/var/www/api
-
-RUN mkdir -p $PARK_DB_ROOT
-COPY . $PARK_DB_ROOT
-WORKDIR $PARK_DB_ROOT
+ENV WORK /opt/api
+ADD api/ $WORK/
+WORKDIR $WORK
 
 RUN mvn package
 
