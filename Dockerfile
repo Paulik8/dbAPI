@@ -10,8 +10,8 @@ RUN apt-get install -y postgresql-$PGVER
 USER postgres
 
 RUN /etc/init.d/postgresql start &&\
-        psql --command "CREATE USER postgres WITH SUPERUSER PASSWORD '1234';" &&\
-         createdb -E UTF8 -T template0 -O postgres 1234 &&\
+        psql --command "CREATE USER docker WITH SUPERUSER PASSWORD '1234';" &&\
+         createdb -E UTF8 -T template0 -O docker 1234 &&\
           /etc/init.d/postgresql stop
 
           RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
