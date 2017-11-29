@@ -33,8 +33,8 @@ USER root
 RUN apt-get install -y openjdk-8-jdk-headless
 RUN apt-get install -y maven
 
-ENV WORK /opt/api
-ADD api/ $WORK/
+ENV WORK /opt/
+ADD / $WORK/
 WORKDIR $WORK
 
 RUN mvn package
