@@ -56,5 +56,4 @@ DROP TABLE threads;
 DROP TABLE forums;
 DROP TABLE users;
 
-SELECT count(*) from posts;
 

@@ -14,6 +14,15 @@ RUN /etc/init.d/postgresql start &&\
          createdb -O admin api &&\
           /etc/init.d/postgresql stop
 
+          RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
+          RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
+          RUN echo "synchronous_commit=off" >> /etc/postgresql/$PGVER/main/postgresql.conf
+          RUN echo "fsync = 'off'" >> /etc/postgresql/$PGVER/main/postgresql.conf
+          RUN echo "max_wal_size = 1GB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+          RUN echo "shared_buffers = 256MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+          RUN echo "effective_cache_size = 256MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+          RUN echo "work_mem = 32MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+
 EXPOSE 5432
 
 # Add VOLUMEs to allow backup of config, logs and databases
