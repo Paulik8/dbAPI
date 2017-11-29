@@ -10,8 +10,8 @@ RUN apt-get install -y postgresql-$PGVER
 USER postgres
 
 RUN /etc/init.d/postgresql start &&\
-        psql --command "CREATE USER admin WITH SUPERUSER PASSWORD '12345';" &&\
-         createdb -E UTF8 -T template0 -O admin 12345 &&\
+        psql --command "CREATE USER postgres WITH SUPERUSER PASSWORD '1234';" &&\
+         createdb -E UTF8 -T template0 -O postgres 1234 &&\
           /etc/init.d/postgresql stop
 
           RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
@@ -41,4 +41,4 @@ RUN mvn package
 
 EXPOSE 5000
 
-CMD service postgresql start && java -jar $PARK_DB_ROOT/target/maildbjava-1.0-SNAPSHOT.jar
+CMD service postgresql start && java -Xmx300M -Xmx300M -jar target/api-1.0-SNAPSHOT.jar
