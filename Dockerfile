@@ -31,7 +31,7 @@ VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 USER root
 
 RUN apt-get install -y openjdk-8-jdk-headless
-RUN apt-get-install -y maven
+RUN apt-get install -y maven
 
 ENV WORK /opt/api
 ADD api/ $WORK/
