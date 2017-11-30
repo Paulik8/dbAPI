@@ -37,7 +37,7 @@ public class ThreadDAO {
 
     public void create(Thread thread) {
         Object[] object;
-        String SQL__id = "insert into \"threads\" (author, message, slug, title, forum, votes, created) VALUES(?,?,?,?,?,?,?::TIMESTAMP) returning id";
+        String SQL__id = "insert into \"threads\" (author, message, slug, title, forum, votes, created) VALUES(?,?,?,?,?,?,?) returning id";
         object = new Object[]{thread.getAuthor(), thread.getMessage(), thread.getSlug(), thread.getTitle(), thread.getForum(), thread.getVotes(), thread.getCreated()};
         thread.setId(jdbc.queryForObject(SQL__id, object, Integer.class));
 
@@ -224,11 +224,12 @@ public class ThreadDAO {
             thread.setTitle(resultSet.getString("title"));
             thread.setMessage(resultSet.getString("message"));
             thread.setSlug(resultSet.getString("slug"));
-            Timestamp created = resultSet.getTimestamp("created");
-            SimpleDateFormat format = new SimpleDateFormat(
-                    "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
-            format.setTimeZone(TimeZone.getTimeZone("UTC"));//здесь надо, а в пост нет????????
-            thread.setCreated(format.format(created));
+            thread.setCreated(resultSet.getTimestamp("created"));
+//            Timestamp created = resultSet.getTimestamp("created");
+//            SimpleDateFormat format = new SimpleDateFormat(
+//                    "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+//            format.setTimeZone(TimeZone.getTimeZone("UTC"));//здесь надо, а в пост нет????????
+//            thread.setCreated(format.format(created));
             //thread.setCreated(resultSet.getString("created"));
             thread.setId(resultSet.getInt("id"));
             thread.setVotes(resultSet.getInt("votes"));

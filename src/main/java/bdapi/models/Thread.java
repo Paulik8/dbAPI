@@ -1,13 +1,15 @@
 package bdapi.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 public class Thread {
     private String author;
-    private String created;
+    //private String created;
     private String forum;
     private int id;
     private String message;
@@ -15,10 +17,13 @@ public class Thread {
     private String title;
     private int votes;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    private Date created;
+
     @JsonCreator
         public Thread(
             @JsonProperty("author") String author,
-            @JsonProperty("created") String created,
+            @JsonProperty("created") Date created,
             @JsonProperty("forum") String forum,
             @JsonProperty("id") int id,
             @JsonProperty("message") String message,
@@ -28,13 +33,13 @@ public class Thread {
     ) {
         this.author = author;
         //this.created = created;
-        if (created == null) {
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            this.created = timestamp.toInstant().toString();
-        } else {
-            this.created = created;
-
-        }
+//        if (created == null) {
+//            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+//            this.created = timestamp.toInstant().toString();
+//        } else {
+//            this.created = created;
+//
+//        }
 //        if (created == null)
 //            this.created = null;
 //        else
@@ -45,6 +50,7 @@ public class Thread {
         this.slug = slug;
         this.title = title;
         this.votes = votes;
+        this.created = created;
     }
 
     public Thread() {
@@ -58,11 +64,11 @@ public class Thread {
         this.author = author;
     }
 
-    public String  getCreated() {
+    public Date  getCreated() {
         return created;
     }
 
-    public void setCreated(String  created)
+    public void setCreated(Date  created)
     //{
 //        if (created == null)
 //            this.created = null;
