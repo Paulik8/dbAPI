@@ -27,7 +27,7 @@ public class UserDAO{
     private static final UserMapper USER_MAPPER = new UserMapper();
 
     public void createUser(final User user) {
-        final String SQL = "insert into \"users\" (nickname, fullname, email, about) VALUES (?, ?, ?, ?)";
+        final String SQL = "insert into users (nickname, fullname, email, about) VALUES (?, ?, ?, ?)";
         jdbc.update(SQL, user.getNickname(), user.getFullname(), user.getEmail(), user.getAbout());
     }
 
@@ -86,7 +86,7 @@ public class UserDAO{
     }
 
     public List<User> getAlreadyUser(final User user) {
-        final String SQL = "select * from \"users\" where LOWER(email) = LOWER(?) OR LOWER(nickname) = LOWER(?)";
+        final String SQL = "select * from users where LOWER(email) = LOWER(?) OR LOWER(nickname) = LOWER(?)";
         return jdbc.query(SQL, USER_MAPPER, user.getEmail(), user.getNickname());
     }
 
