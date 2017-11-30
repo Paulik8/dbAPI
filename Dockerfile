@@ -42,6 +42,4 @@ RUN mvn package
 EXPOSE 5000
 
 CMD service postgresql start &&\
-     psql --command "CREATE DATABASE forum WITH ENCODING 'UTF8';" && \
-     psql -f $WORK/opt/table.sql forum postgres && \
      java -Xmx300M -Xmx300M -jar target/api-1.0-SNAPSHOT.jar --database=jdbc:postgresql://localhost/docker --username=docker --password=docker
