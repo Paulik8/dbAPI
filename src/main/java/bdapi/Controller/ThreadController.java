@@ -3,10 +3,8 @@ package bdapi.Controller;
 import bdapi.DAO.PostDAO;
 import bdapi.DAO.ThreadDAO;
 import bdapi.DAO.UserDAO;
-import bdapi.models.Message;
-import bdapi.models.Post;
+import bdapi.models.*;
 import bdapi.models.Thread;
-import bdapi.models.Vote;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -100,6 +98,7 @@ public class ThreadController {
         return ResponseEntity.ok(thread);
     }
 
+
     @PostMapping(path = "/{slug_or_id}/vote")
     public ResponseEntity setVote(@PathVariable(name = "slug_or_id") String slug_or_id,
                                   @RequestBody Vote vote) {
@@ -112,16 +111,16 @@ public class ThreadController {
 
         Vote checkVote = threadDAO.getVotebyVote(vote);//голосовал ли он ранее
         if (checkVote == null) {
-            threadDAO.insertVote(vote);
             threadDAO.createVote(thread, vote.getVoice()/*, flag*/);//прибавление голоса в ветке или уменьшение
+            threadDAO.insertVote(vote);
             //flag = 0;//не голосовал
         }
-        if (checkVote != null && vote.getVoice().equals(checkVote.getVoice())) {
-            return ResponseEntity.ok(CheckIdOrSlug(slug_or_id));
+        if (checkVote != null && (vote.getVoice()).equals(checkVote.getVoice())) {
+            return ResponseEntity.ok(threadDAO.getThreadById((int)thread.getId()));
         }
         if (checkVote != null && !(vote.getVoice().equals(checkVote.getVoice()))) {
-            threadDAO.updateVote(vote);
             threadDAO.createVote(thread, (vote.getVoice() * 2)/*, flag*/);//прибавление голоса в ветке или уменьшение
+            threadDAO.updateVote(vote);
            // flag = vote.getVoice();//да голосовал
         }
 

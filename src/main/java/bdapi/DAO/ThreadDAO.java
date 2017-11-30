@@ -9,6 +9,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
@@ -19,7 +20,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 @Service
-@Transactional
 public class ThreadDAO {
     private static final ThreadMapper THREAD_MAPPER = new ThreadMapper();
     private static final VoteMapper VOTE_MAPPER = new VoteMapper();
@@ -34,7 +34,7 @@ public class ThreadDAO {
 //        jdbc.update(SQL, thread.getAuthor(), thread.getCreated(), thread.getMessage(), thread.getTitle());
 //
 //    }
-
+    //@Transactional(isolation = Isolation.READ_COMMITTED)
     public void create(Thread thread) {
         Object[] object;
         String SQL__id = "insert into \"threads\" (author, message, slug, title, forum, votes, created) VALUES(?,?,?,?,?,?,?) returning id";
@@ -44,7 +44,7 @@ public class ThreadDAO {
         final String SQL_UP_FORUM = "UPDATE \"forums\" SET threads = threads + 1 WHERE slug::citext = ?::citext";
         jdbc.update(SQL_UP_FORUM, thread.getForum());
     }
-
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void change(Thread thread) {
         String SQL = "update \"threads\" set message = ?, title = ? where slug::citext = ?::citext";// + where
         jdbc.update(SQL, thread.getMessage(), thread.getTitle(), thread.getSlug());
@@ -59,6 +59,8 @@ public class ThreadDAO {
             return null;
         }
     }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void createVote(Thread thread, Integer voice) {
         String SQL = "update \"threads\" set votes = votes + ? where id = ?";
         jdbc.update(SQL, voice, thread.getId());
@@ -105,16 +107,18 @@ public class ThreadDAO {
         return jdbc.query(SQL, THREAD_MAPPER, obj.toArray());
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void insertVote(Vote vote) {
         String SQL = "insert into \"votes\" (nickname, voice) VALUES(?, ?)";
         jdbc.update(SQL, vote.getNickname(), vote.getVoice());
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void updateVote(Vote vote) {
         String SQL = "update \"votes\" set voice = ? where nickname::citext = ?::citext";
         jdbc.update(SQL, vote.getVoice(), vote.getNickname());
     }
-
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Vote getVotebyVote(Vote vote) {
         try {
             String SQL = "SELECT * FROM \"votes\" WHERE nickname::CITEXT = ?::CITEXT";
@@ -124,10 +128,6 @@ public class ThreadDAO {
         }
     }
 
-    public Vote getVote(Vote vote) {
-        String SQL = "select * from \"votes\" where nickname::citext = ?::citext";
-        return jdbc.queryForObject(SQL, VOTE_MAPPER, vote.getNickname());
-    }
 
     public List<Post> getPosts(long threadId, Integer limit, Integer since, String sort, Boolean desc) {
         List<Object> myObj = new ArrayList<>();

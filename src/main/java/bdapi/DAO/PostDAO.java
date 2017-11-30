@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
-@Transactional
 public class PostDAO {
     private final JdbcTemplate jdbc;
     private static final PostMapper POST_MAPPER = new PostMapper();
@@ -26,7 +25,7 @@ public class PostDAO {
         this.jdbc = jdbc;
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    //@Transactional
     public void create (List<Post> posts) {
         Object[] object;
         String SQL = "insert into \"posts\" (author, forum, isedited, message, thread, parent, created) VALUES(?,?,?,?,?,?,?::timestamp) returning id";
@@ -50,7 +49,7 @@ public class PostDAO {
             return null;
         }
     }
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    //@Transactional
     public void setPath(Post parentPost, Post childPost) {
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(con -> {
@@ -90,7 +89,7 @@ public class PostDAO {
 //        String SQL = "update \"posts\" set path = ? where id = ?";
 //        jdbc.update(SQL,  obj, childPost.getId());
     }
-
+    //@Transactional
     public void changeMessage(Integer id, String message) {
         String SQL;
         if (message == null) {
