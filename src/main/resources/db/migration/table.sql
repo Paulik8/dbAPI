@@ -50,10 +50,5 @@ CREATE TABLE IF NOT EXISTS  "votes" (
   FOREIGN KEY (nickname) REFERENCES "users" (nickname)
 );
 
-DROP TABLE votes;
-DROP TABLE posts;
-DROP TABLE threads;
-DROP TABLE forums;
-DROP TABLE users;
 
 
