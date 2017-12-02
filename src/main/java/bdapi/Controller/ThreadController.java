@@ -109,10 +109,10 @@ public class ThreadController {
         if (thread == null || userDAO.getUserbyNickname(vote.getNickname()) == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find thread"));
 
-        Vote checkVote = threadDAO.getVotebyVote(vote);//голосовал ли он ранее
+        Vote checkVote = threadDAO.getVotebyVote(vote, thread);//голосовал ли он ранее
         if (checkVote == null) {
             threadDAO.createVote(thread, vote.getVoice()/*, flag*/);//прибавление голоса в ветке или уменьшение
-            threadDAO.insertVote(vote);
+            threadDAO.insertVote(vote, thread);
             //flag = 0;//не голосовал
         }
         if (checkVote != null && (vote.getVoice()).equals(checkVote.getVoice())) {
@@ -120,7 +120,7 @@ public class ThreadController {
         }
         if (checkVote != null && !(vote.getVoice().equals(checkVote.getVoice()))) {
             threadDAO.createVote(thread, (vote.getVoice() * 2)/*, flag*/);//прибавление голоса в ветке или уменьшение
-            threadDAO.updateVote(vote);
+            threadDAO.updateVote(vote, thread);
            // flag = vote.getVoice();//да голосовал
         }
 

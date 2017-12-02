@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS  "votes" (
   id SERIAL PRIMARY KEY,
   voice INTEGER DEFAULT 0,
   nickname citext,
+  threadid INTEGER REFERENCES threads(id),
   FOREIGN KEY (nickname) REFERENCES "users" (nickname)
 );
 

@@ -108,21 +108,21 @@ public class ThreadDAO {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void insertVote(Vote vote) {
-        String SQL = "insert into \"votes\" (nickname, voice) VALUES(?, ?)";
-        jdbc.update(SQL, vote.getNickname(), vote.getVoice());
+    public void insertVote(Vote vote, Thread thread) {
+        String SQL = "insert into \"votes\" (nickname, voice, threadid) VALUES(?, ?, ?)";
+        jdbc.update(SQL, vote.getNickname(), vote.getVoice(), thread.getId());
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void updateVote(Vote vote) {
-        String SQL = "update \"votes\" set voice = ? where nickname::citext = ?::citext";
-        jdbc.update(SQL, vote.getVoice(), vote.getNickname());
+    public void updateVote(Vote vote, Thread thread) {
+        String SQL = "update \"votes\" set voice = ? where nickname::citext = ?::citext and threadid = ?";
+        jdbc.update(SQL, vote.getVoice(), vote.getNickname(), thread.getId());
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public Vote getVotebyVote(Vote vote) {
+    public Vote getVotebyVote(Vote vote, Thread thread) {
         try {
-            String SQL = "SELECT * FROM \"votes\" WHERE nickname::CITEXT = ?::CITEXT";
-            return jdbc.queryForObject(SQL, VOTE_MAPPER, vote.getNickname());
+            String SQL = "SELECT * FROM \"votes\" WHERE nickname::CITEXT = ?::CITEXT and threadid = ?";
+            return jdbc.queryForObject(SQL, VOTE_MAPPER, vote.getNickname(), thread.getId());
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -265,6 +265,7 @@ public class ThreadDAO {
             Vote vote = new Vote();
             vote.setNickname(resultSet.getString("nickname"));
             vote.setVoice(resultSet.getInt("voice"));
+            vote.setId(resultSet.getInt("id"));
             return vote;
         }
     }
