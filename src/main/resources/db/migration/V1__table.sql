@@ -62,6 +62,16 @@ CREATE INDEX posts_path on posts (path);
 CREATE INDEX posts_author on posts (lower(author));
 CREATE INDEX posts_forum on posts (lower(forum));
 
+CREATE INDEX users_nickname on users (lower(nickname));
+
+CREATE INDEX threads_slug on threads (lower(slug));
+CREATE INDEX threads_votes on threads (votes);
+
+CREATE INDEX forums_slug on forums (lower(slug), posts);
+CREATE INDEX forums_threads on forums (lower(slug), threads);
+
+CREATE INDEX votes_nickname_threadid on votes (lower(nickname), threadid);
+CREATE INDEX votes_nickname_threadid_voice on votes (lower(nickname), threadid, voice);
 
 
 
