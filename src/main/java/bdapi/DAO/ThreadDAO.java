@@ -44,7 +44,6 @@ public class ThreadDAO {
         final String SQL_UP_FORUM = "UPDATE \"forums\" SET threads = threads + 1 WHERE slug::citext = ?::citext";
         jdbc.update(SQL_UP_FORUM, thread.getForum());
     }
-    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void change(Thread thread) {
         String SQL = "update \"threads\" set message = ?, title = ? where slug::citext = ?::citext";// + where
         jdbc.update(SQL, thread.getMessage(), thread.getTitle(), thread.getSlug());
@@ -60,7 +59,6 @@ public class ThreadDAO {
         }
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void createVote(Thread thread, Integer voice) {
         String SQL = "update \"threads\" set votes = votes + ? where id = ?";
         jdbc.update(SQL, voice, thread.getId());
@@ -107,18 +105,16 @@ public class ThreadDAO {
         return jdbc.query(SQL, THREAD_MAPPER, obj.toArray());
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void insertVote(Vote vote, Thread thread) {
         String SQL = "insert into \"votes\" (nickname, voice, threadid) VALUES(?, ?, ?)";
         jdbc.update(SQL, vote.getNickname(), vote.getVoice(), thread.getId());
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void updateVote(Vote vote, Thread thread) {
         String SQL = "update \"votes\" set voice = ? where nickname::citext = ?::citext and threadid = ?";
         jdbc.update(SQL, vote.getVoice(), vote.getNickname(), thread.getId());
     }
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+
     public Vote getVotebyVote(Vote vote, Thread thread) {
         try {
             String SQL = "SELECT * FROM \"votes\" WHERE nickname::CITEXT = ?::CITEXT and threadid = ?";
