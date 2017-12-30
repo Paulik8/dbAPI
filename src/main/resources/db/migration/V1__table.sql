@@ -1,10 +1,10 @@
 CREATE EXTENSION IF NOT EXISTS citext;
 
-DROP TABLE votes;
-DROP TABLE posts;
-DROP TABLE threads;
-DROP TABLE forums;
-DROP TABLE users;
+-- DROP TABLE votes;
+-- DROP TABLE posts;
+-- DROP TABLE threads;
+-- DROP TABLE forums;
+-- DROP TABLE users;
 
 
 CREATE TABLE IF NOT EXISTS "users" (
