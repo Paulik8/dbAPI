@@ -1,6 +1,13 @@
 CREATE EXTENSION IF NOT EXISTS citext;
 
-CREATE TABLE "users" (
+DROP TABLE votes;
+DROP TABLE posts;
+DROP TABLE threads;
+DROP TABLE forums;
+DROP TABLE users;
+
+
+CREATE TABLE IF NOT EXISTS "users" (
   id SERIAL NOT NULL PRIMARY KEY,
   nickname CITEXT COLLATE ucs_basic NOT NULL UNIQUE,
   fullname citext,
@@ -50,6 +57,11 @@ CREATE TABLE IF NOT EXISTS  "votes" (
   threadid INTEGER REFERENCES threads(id),
   FOREIGN KEY (nickname) REFERENCES "users" (nickname)
 );
+
+CREATE INDEX posts_path on posts (path);
+CREATE INDEX posts_author on posts (lower(author));
+CREATE INDEX posts_forum on posts (lower(forum));
+
 
 
 

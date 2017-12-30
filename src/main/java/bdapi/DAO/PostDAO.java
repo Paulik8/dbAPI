@@ -60,7 +60,8 @@ public class PostDAO {
                             "where id = ?",
                     PreparedStatement.RETURN_GENERATED_KEYS);
             if (childPost.getParent() == 0) {
-                pst.setArray(1, con.createArrayOf("int", (new Object[]{childPost.getId()}) ));
+                ArrayList arr = new ArrayList<Object>(Arrays.asList(childPost.getId()));
+                pst.setArray(1, con.createArrayOf("int", arr.toArray()));
             } else {
                 if (parentPost.getPath() == null) {
                     ArrayList arr = new ArrayList<Object>(Arrays.asList(0));
