@@ -104,25 +104,35 @@ public class ThreadController {
                                   @RequestBody Vote vote) {
 
         Thread thread;
-        //Integer flag;
+        Integer flag = null;
+        Boolean bool = null;
         thread = CheckIdOrSlug(slug_or_id);
         if (thread == null || userDAO.getUserbyNickname(vote.getNickname()) == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find thread"));
 
         Vote checkVote = threadDAO.getVotebyVote(vote, thread);//голосовал ли он ранее
-        if (checkVote == null) {
-            threadDAO.createVote(thread, vote.getVoice()/*, flag*/);//прибавление голоса в ветке или уменьшение
-            threadDAO.insertVote(vote, thread);
-            //flag = 0;//не голосовал
-        }
+
         if (checkVote != null && (vote.getVoice()).equals(checkVote.getVoice())) {
             return ResponseEntity.ok(threadDAO.getThreadById((int)thread.getId()));
         }
-        if (checkVote != null && !(vote.getVoice().equals(checkVote.getVoice()))) {
-            threadDAO.createVote(thread, (vote.getVoice() * 2)/*, flag*/);//прибавление голоса в ветке или уменьшение
-            threadDAO.updateVote(vote, thread);
-           // flag = vote.getVoice();//да голосовал
+        if (checkVote == null) {
+            flag = 1;
+            bool = true;
         }
+        if (checkVote != null && !(vote.getVoice().equals(checkVote.getVoice()))) {
+            flag = 2;
+            bool = false;
+        }
+            threadDAO.createVote(thread, vote.getVoice() * flag);//прибавление голоса в ветке или уменьшение
+            threadDAO.insert_or_update_Vote(vote, thread, bool);
+            //flag = 0;//не голосовал
+
+//        if (checkVote != null && !(vote.getVoice().equals(checkVote.getVoice()))) {
+//            flag = 2;
+//            threadDAO.createVote(thread, vote.getVoice() * flag);//прибавление голоса в ветке или уменьшение
+//            threadDAO.updateVote(vote, thread);
+//           // flag = vote.getVoice();//да голосовал
+//        }
 
         //Vote getvote = threadDAO.getVote(vote);
         //if (getvote.getVoice() != 0)

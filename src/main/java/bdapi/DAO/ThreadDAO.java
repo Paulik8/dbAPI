@@ -106,15 +106,20 @@ public class ThreadDAO {
         return jdbc.query(SQL, THREAD_MAPPER, obj.toArray());
     }
 
-    public void insertVote(Vote vote, Thread thread) {
-        String SQL = "insert into \"votes\" (nickname, voice, threadid) VALUES(?, ?, ?)";
-        jdbc.update(SQL, vote.getNickname(), vote.getVoice(), thread.getId());
+    public void insert_or_update_Vote(Vote vote, Thread thread, Boolean bool) {
+        if (bool) {
+            String SQL = "insert into \"votes\" (nickname, voice, threadid) VALUES(?, ?, ?)";
+            jdbc.update(SQL, vote.getNickname(), vote.getVoice(), thread.getId());
+        } else {
+            String SQL = "update \"votes\" set voice = ? where nickname::citext = ?::citext and threadid = ?";
+            jdbc.update(SQL, vote.getVoice(), vote.getNickname(), thread.getId());
+        }
     }
 
-    public void updateVote(Vote vote, Thread thread) {
-        String SQL = "update \"votes\" set voice = ? where nickname::citext = ?::citext and threadid = ?";
-        jdbc.update(SQL, vote.getVoice(), vote.getNickname(), thread.getId());
-    }
+//    public void updateVote(Vote vote, Thread thread) {
+////        String SQL = "update \"votes\" set voice = ? where nickname::citext = ?::citext and threadid = ?";
+////        jdbc.update(SQL, vote.getVoice(), vote.getNickname(), thread.getId());
+//    }
 
     public Vote getVotebyVote(Vote vote, Thread thread) {
         try {

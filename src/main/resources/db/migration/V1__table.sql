@@ -1,5 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS citext;
-
+--
 -- DROP TABLE votes;
 -- DROP TABLE posts;
 -- DROP TABLE threads;
@@ -58,20 +58,20 @@ CREATE TABLE IF NOT EXISTS  "votes" (
   FOREIGN KEY (nickname) REFERENCES "users" (nickname)
 );
 
-CREATE INDEX posts_path on posts (path);
-CREATE INDEX posts_author on posts (lower(author));
-CREATE INDEX posts_forum on posts (lower(forum));
+CREATE INDEX IF NOT EXISTS posts_path on posts (path);
+CREATE INDEX IF NOT EXISTS posts_author on posts (lower(author));
+CREATE INDEX IF NOT EXISTS posts_forum on posts (lower(forum));
 
-CREATE INDEX users_nickname on users (lower(nickname));
+CREATE INDEX IF NOT EXISTS users_nickname on users (lower(nickname));
 
-CREATE INDEX threads_slug on threads (lower(slug));
-CREATE INDEX threads_votes on threads (votes);
+CREATE INDEX IF NOT EXISTS threads_slug on threads (lower(slug));
+CREATE INDEX IF NOT EXISTS threads_votes on threads (votes);
 
-CREATE INDEX forums_slug on forums (lower(slug), posts);
-CREATE INDEX forums_threads on forums (lower(slug), threads);
+CREATE INDEX IF NOT EXISTS forums_slug on forums (lower(slug), posts);
+CREATE INDEX IF NOT EXISTS forums_threads on forums (lower(slug));
 
-CREATE INDEX votes_nickname_threadid on votes (lower(nickname), threadid);
-CREATE INDEX votes_nickname_threadid_voice on votes (lower(nickname), threadid, voice);
+CREATE INDEX IF NOT EXISTS votes_nickname_threadid on votes (lower(nickname), threadid);
+CREATE INDEX IF NOT EXISTS votes_nickname_threadid_voice on votes (nickname, voice, threadid);
 
 
 
