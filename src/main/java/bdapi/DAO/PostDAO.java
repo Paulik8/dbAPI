@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
+@Transactional
 public class PostDAO {
     private final JdbcTemplate jdbc;
     private static final PostMapper POST_MAPPER = new PostMapper();
@@ -25,7 +26,7 @@ public class PostDAO {
         this.jdbc = jdbc;
     }
 
-    //@Transactional
+
     public void create (List<Post> posts) {
         Object[] object;
         String SQL = "insert into \"posts\" (author, forum, isedited, message, thread, parent, created) VALUES(?,?,?,?,?,?,?::timestamp) returning id";

@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 @Service
+@Transactional
 public class ThreadDAO {
     private static final ThreadMapper THREAD_MAPPER = new ThreadMapper();
     private static final VoteMapper VOTE_MAPPER = new VoteMapper();
