@@ -4,6 +4,7 @@ import bdapi.models.Forum;
 import bdapi.models.Post;
 import bdapi.models.Thread;
 import bdapi.models.Vote;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -131,23 +132,26 @@ public class ThreadDAO {
     public List<Post> getPosts(long threadId, Integer limit, Integer since, String sort, Boolean desc) {
         List<Object> myObj = new ArrayList<>();
         List<Post> result = new ArrayList<>();
-        String myStr = "select * from posts where thread = ? ";
-        myObj.add(threadId);
+        String asc = desc ? "<" : ">";
+        String myStr = "";
+//        myObj.add(threadId);
         if (sort == null)
             sort = "flat";
         switch (sort) {
             case "flat":
+                myStr = "select * from posts where thread = ? ";
+                myObj.add(threadId);
                 if (since != null) {
-                    if (desc != null && desc) {
-                        myStr += " and id < ?";
-                    } else {
-                        myStr += " and id > ?";
-                    }
+                    //if (desc != null && desc) {
+                        myStr += " and id " + asc + "?";
+                    //} else {
+                        //myStr += " and id > ?";
+                    //}
                     myObj.add(since);
                 }
                 myStr += " order by created ";
                 if (desc != null && desc) {
-                    myStr += " desc, id desc ";
+                    myStr += " desc, id desc";
                 } else {
                     myStr += ", id";
                 }
@@ -158,17 +162,19 @@ public class ThreadDAO {
                 break;
 
             case "tree":
+                myStr = "select * from posts where thread = ? ";
+                myObj.add(threadId);
                 if (since != null) {
-                    if (desc != null && desc) {
-                        myStr += " and path < (select path from posts where id = ?) ";
-                    } else {
-                        myStr += " and path > (select path from posts where id = ?) ";
-                    }
+                    //if (desc != null && desc) {
+                        myStr += " and path" + asc +" (select path from posts where id = ?) ";
+                    //} else {
+                    //    myStr += " and path > (select path from posts where id = ?) ";
+                    //}
                     myObj.add(since);
                 }
                 myStr += " order by path ";
                 if (desc != null && desc) {
-                    myStr += " desc, id desc ";
+                    myStr += " desc";
                 }
                 if (limit != null) {
                     myStr += " limit ? ";
@@ -176,32 +182,45 @@ public class ThreadDAO {
                 }
                 break;
             case "parent_tree":
+                myStr += "select p.* from posts as p join";
                 if (since != null) {
-                    if (desc != null && desc) {
-                        myStr += " and path[1] =  ANY(select id from posts where parent = 0 and path < (select path from posts where id = ?) and thread = ? order by id desc limit ? ) ";
+                    //myObj.add(threadId);
+                    //if (desc != null && desc) {
+                        myStr += " (select id from posts where thread = ? and parent = 0 and path" + asc + " (select path from posts where id = ?) order by id " + ((desc != null && desc) ? " desc " : "") + " limit ? ) as z on z.id = p.path[1]";
 
-                    } else {
-                        myStr += " and path[1] =  ANY(select id from posts where parent = 0 and path > (select path from posts where id = ?) and thread = ? order by id limit ? ) ";
-                    }
-                    myObj.add(since);
+                   // } else {
+                   //     myStr += " (select id from posts where thread = ? and parent = 0 and path > (select path from posts where id = ?) order by id limit ? ) as z on z.id = p.path[1] ";
+                    //}
                     myObj.add(threadId);
+                    myObj.add(since);
                     myObj.add(limit);
                 } else if (limit != null) {
-                    if (desc != null && desc) {
-                        myStr += " and path[1] =  ANY(select id  from posts where parent = 0 and thread = ? order by id desc limit ? ) ";
-                    } else {
-                        myStr += " and path[1] =  ANY(select id  from posts where parent = 0 and thread = ? order by id limit ? ) ";
+                    //if (desc != null && desc) {
+                        myStr += "(select id from posts where thread = ? and parent = 0 order by id " + ((desc != null && desc) ? " desc ": "") + " limit ?) as z on z.id = p.path[1]";
+                        myObj.add(threadId);
+                        myObj.add(limit);
+//                        myStr += " and path[1] =  ANY(select id  from posts where parent = 0 and thread = ? order by id desc limit ? ) ";
+                    //} else {
+//                        myStr += "(select id from posts where thread = ? and parent = 0 order by id limit ?) as z on z.id = p.path[1] order by path";
+//                        myObj.add(threadId);
+//                        myObj.add(limit);
+//  myStr += " and path[1] =  ANY(select id  from posts where parent = 0 and thread = ? order by id limit ? ) ";
+                        //myStr += " limit ?";
                     }
-                    myObj.add(threadId);
-                    myObj.add(limit);
+//                    if (desc != null && desc) {
+//                        myStr += " desc ";
+//                    }
+                    myStr += " order by path ";
+                    if (desc != null && desc) {
+                        myStr += " desc ";
+                    }
+                    break;
+                    //myObj.add(threadId);
+                    //myObj.add(limit);
                 }
-                myStr += " order by path ";
-                if (desc != null && desc) {
-                    myStr += " desc ";
-                }
-                System.out.print(myStr);
-                break;
-        }
+
+//                System.out.print(myStr);
+
         return jdbc.query(myStr, myObj.toArray(), POST_MAPPER);
         //return result;
     }
