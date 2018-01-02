@@ -116,15 +116,6 @@ public class PostDAO {
         }
     }
 
-    public Post getFinishPostbyId(Integer id) {
-        try {
-            String SQL = "SELECT * FROM \"posts\" WHERE id = ?";
-            return jdbc.queryForObject(SQL, POST_MAPPER, id);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
-
     public Post getChild(Long parent) {
         try {
             String SQL = "select * from \"posts\" where id = ?";

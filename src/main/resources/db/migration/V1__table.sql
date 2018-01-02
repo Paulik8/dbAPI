@@ -59,8 +59,8 @@ CREATE TABLE IF NOT EXISTS  "votes" (
 );
 
 CREATE INDEX IF NOT EXISTS posts_path on posts (path);
-CREATE INDEX IF NOT EXISTS posts_thread_path on posts (thread, path);
-CREATE INDEX IF NOT EXISTS posts_thread_id on posts (thread, id);
+-- CREATE INDEX IF NOT EXISTS posts_thread_path on posts (thread, path);
+-- CREATE INDEX IF NOT EXISTS posts_thread_id on posts (thread, id);
 -- CREATE INDEX IF NOT EXISTS posts_thread_parent_path on posts (thread, parent, path);
 -- CREATE INDEX IF NOT EXISTS posts_thread_parent on posts (thread, parent);
 CREATE INDEX IF NOT EXISTS posts_author on posts (author);

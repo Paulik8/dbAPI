@@ -70,6 +70,6 @@ public class PostController {
             return ResponseEntity.ok(post);
         }
         postDAO.changeMessage((int)post.getId(), body.getMessage());
-        return ResponseEntity.ok(postDAO.getFinishPostbyId(id));
+        return ResponseEntity.ok(postDAO.getPostbyId(id));
     }
 }
