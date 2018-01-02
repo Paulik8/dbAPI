@@ -133,88 +133,79 @@ public class ThreadDAO {
 
     public List<Post> getPosts(long threadId, Integer limit, Integer since, String sort, Boolean desc) {
         List<Object> myObj = new ArrayList<>();
-        if (sort == null || sort.equals("flat")) {
-            String myStr = "select * from posts where thread = ?";
-            myObj.add(threadId);
-            if (since != null) {
-                if (desc != null && desc) {
-                    myStr += " and id < ?";
-                } else {
-                    myStr += " and id > ?";
+        List<Post> result = new ArrayList<>();
+        String myStr = "select * from posts where thread = ? ";
+        myObj.add(threadId);
+        if (sort == null)
+            sort = "flat";
+        switch (sort) {
+            case "flat":
+                if (since != null) {
+                    if (desc != null && desc) {
+                        myStr += " and id < ?";
+                    } else {
+                        myStr += " and id > ?";
+                    }
+                    myObj.add(since);
                 }
-                myObj.add(since);
-            }
-            myStr += " order by created ";
-            if (desc != null && desc) {
-                myStr += " desc, id desc ";
-            } else {
-                myStr += ", id";
-            }
-            if (limit != null) {
-                myStr += " limit ? ";
-                myObj.add(limit);
-            }
-
-            List<Post> result = jdbc.query(myStr
-                    , myObj.toArray(), POST_MAPPER);
-            return result;
-        } else if (sort.equals("tree")) {
-            String myStr = "select * from posts where thread = ?";
-            myObj.add(threadId);
-            if (since != null) {
+                myStr += " order by created ";
                 if (desc != null && desc) {
-                    myStr += " and path < (select path from posts where id = ?) ";
+                    myStr += " desc, id desc ";
                 } else {
-                    myStr += " and path > (select path from posts where id = ?) ";
+                    myStr += ", id";
                 }
-                myObj.add(since);
-            }
-            myStr += " order by path ";
-            if (desc != null && desc) {
-                myStr += " desc, id desc ";
-            }
-            if (limit != null) {
-                myStr += " limit ? ";
-                myObj.add(limit);
-            }
+                if (limit != null) {
+                    myStr += " limit ? ";
+                    myObj.add(limit);
+                }
+                break;
 
-            List<Post> result = jdbc.query(myStr
-                    , myObj.toArray(), POST_MAPPER);
-            return result;
-
-        } else {
-            //WORKING HERE
-            String myStr = "select * from posts where thread = ? ";
-            myObj.add(threadId);
-            if (since != null) {
+            case "tree":
+                if (since != null) {
+                    if (desc != null && desc) {
+                        myStr += " and path < (select path from posts where id = ?) ";
+                    } else {
+                        myStr += " and path > (select path from posts where id = ?) ";
+                    }
+                    myObj.add(since);
+                }
+                myStr += " order by path ";
                 if (desc != null && desc) {
-                    myStr += " and path[1] = ANY (select id from posts where parent = 0 and path < (select path from posts where id = ?) and thread = ? order by id desc limit ? ) ";
+                    myStr += " desc, id desc ";
+                }
+                if (limit != null) {
+                    myStr += " limit ? ";
+                    myObj.add(limit);
+                }
+                break;
+            case "parent_tree":
+                if (since != null) {
+                    if (desc != null && desc) {
+                        myStr += " and path[1] =  ANY(select id from posts where parent = 0 and path < (select path from posts where id = ?) and thread = ? order by id desc limit ? ) ";
 
-                } else {
-                    myStr += " and path[1] = ANY (select id from posts where parent = 0 and path > (select path from posts where id = ?) and thread = ? order by id limit ? ) ";
+                    } else {
+                        myStr += " and path[1] =  ANY(select id from posts where parent = 0 and path > (select path from posts where id = ?) and thread = ? order by id limit ? ) ";
+                    }
+                    myObj.add(since);
+                    myObj.add(threadId);
+                    myObj.add(limit);
+                } else if (limit != null) {
+                    if (desc != null && desc) {
+                        myStr += " and path[1] =  ANY(select id  from posts where parent = 0 and thread = ? order by id desc limit ? ) ";
+                    } else {
+                        myStr += " and path[1] =  ANY(select id  from posts where parent = 0 and thread = ? order by id limit ? ) ";
+                    }
+                    myObj.add(threadId);
+                    myObj.add(limit);
                 }
-                myObj.add(since);
-                myObj.add(threadId);
-                myObj.add(limit);
-            } else if (limit != null) {
+                myStr += " order by path ";
                 if (desc != null && desc) {
-                    myStr += " and path[1] = ANY (select id  from posts where parent = 0 and thread = ? order by id desc limit ? ) ";
-                } else {
-                    myStr += " and path[1] = ANY (select id  from posts where parent = 0 and thread = ? order by id limit ? ) ";
+                    myStr += " desc ";
                 }
-                myObj.add(threadId);
-                myObj.add(limit);
-            }
-            myStr += " order by path ";
-            if (desc != null && desc) {
-                myStr += " desc ";
-            }
-            List<Post> result = jdbc.query(myStr
-                    , myObj.toArray(), POST_MAPPER);
-            return result;
+                break;
         }
-
-
+        return jdbc.query(myStr, myObj.toArray(), POST_MAPPER);
+        //return result;
     }
 
 

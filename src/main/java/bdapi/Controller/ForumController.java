@@ -90,28 +90,16 @@ public class ForumController {
 
     @GetMapping(path = "/{slug}/threads")
     public ResponseEntity getForum(@PathVariable(name="slug") String slug,
-                                   //@RequestBody int limit,
-                                   //@RequestBody String since,
-                                   //@RequestBody boolean desc) {
                                    @RequestParam(name="limit", required = false) Integer limit,
                                    @RequestParam(name="since", required = false) String since,
                                    @RequestParam(name="desc", required = false) Boolean desc) {
         List<Thread> thread;
         Forum forum;
         forum = forumDAO.getForumbySlug(slug);
-            //forum.setSlug(slug);
         if (forum == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find user"));
         }
-//        try {
-//            thread = threadDAO.getThreads(slug, limit, since, desc);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return ResponseEntity.notFound().build();
-//        }
         thread = threadDAO.getThreads(forum, limit, since, desc);
-        //String ForumSlug = forum.getSlug();
-
         return ResponseEntity.ok(thread);
 
     }

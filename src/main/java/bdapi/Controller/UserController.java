@@ -40,16 +40,11 @@ public class UserController {
 
         @GetMapping(path = "/{nickname}/profile")
         public ResponseEntity getUserProfile(@PathVariable(name = "nickname") String nick) {
-            //User user;
-//            try {
-//                user = userDAO.getUserbyNickname(nick);
-//            } catch (EmptyResultDataAccessException e) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cant find User"));
-//            }
-            if (userDAO.getUserbyNickname(nick) == null) {
+            User user = userDAO.getUserbyNickname(nick);
+            if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cant find user"));
             };
-            return ResponseEntity.ok(userDAO.getUserbyNickname(nick));
+            return ResponseEntity.ok(user);
         }
 
          @PostMapping(path = "/{nickname}/profile")
