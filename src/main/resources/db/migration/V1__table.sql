@@ -1,10 +1,10 @@
 CREATE EXTENSION IF NOT EXISTS citext;
 
--- DROP TABLE votes;
--- DROP TABLE posts;
--- DROP TABLE threads;
--- DROP TABLE forums;
--- DROP TABLE users;
+DROP TABLE if EXISTS votes;
+DROP TABLE if EXISTS posts;
+DROP TABLE if EXISTS threads;
+DROP TABLE if EXISTS forums;
+DROP TABLE if EXISTS users;
 
 
 CREATE TABLE IF NOT EXISTS "users" (
@@ -63,8 +63,8 @@ CREATE INDEX IF NOT EXISTS posts_thread_path on posts (thread, path);
 CREATE INDEX IF NOT EXISTS posts_thread_id on posts (thread, id);
 -- CREATE INDEX IF NOT EXISTS posts_thread_parent_path on posts (thread, parent, path);
 -- CREATE INDEX IF NOT EXISTS posts_thread_parent on posts (thread, parent);
--- CREATE INDEX IF NOT EXISTS posts_author on posts (lower(author));
--- CREATE INDEX IF NOT EXISTS posts_forum on posts (lower(forum));
+CREATE INDEX IF NOT EXISTS posts_author on posts (author);
+CREATE INDEX IF NOT EXISTS posts_forum on posts (forum);
 -- CREATE INDEX IF NOT EXISTS posts_forum_author on posts (lower(forum), lower(author));
 
 CREATE INDEX IF NOT EXISTS users_nickname on users (nickname);

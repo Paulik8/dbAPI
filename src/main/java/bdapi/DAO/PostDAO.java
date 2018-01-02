@@ -51,14 +51,12 @@ public class PostDAO {
         }
     }
     //@Transactional
-    public void setPath(Post parentPost, Post childPost) {
-        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+    private void setPath(Post parentPost, Post childPost) {
         jdbc.update(con -> {
             PreparedStatement pst = con.prepareStatement(
                     "update posts set" +
                             "  path = ? " +
-                            "where id = ?",
-                    PreparedStatement.RETURN_GENERATED_KEYS);
+                            "where id = ?");
             if (childPost.getParent() == 0) {
                 ArrayList arr = new ArrayList<Object>(Arrays.asList(childPost.getId()));
                 pst.setArray(1, con.createArrayOf("int", arr.toArray()));
@@ -75,7 +73,7 @@ public class PostDAO {
             }
             pst.setLong(2, childPost.getId());
             return pst;
-        }, keyHolder);
+        });
 
         //List<Object> obj = new ArrayList<>();
 //        Array arr;

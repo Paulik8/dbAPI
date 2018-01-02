@@ -55,9 +55,6 @@ public class ThreadController {
             if (userDAO.getUserbyNickname(post.getAuthor()) == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found this author"));
             }
-        }
-
-        for (Post post : posts) {
             Post checkPost = postDAO.getPostbyId((int)post.getParent());
             Post check = postDAO.getChild(post.getParent());
             if ((checkPost == null || check == null) &&
@@ -65,6 +62,10 @@ public class ThreadController {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("conflict"));
             }
         }
+
+//        for (Post post : posts) {
+//
+//        }
         postDAO.create(posts);
         return ResponseEntity.status(HttpStatus.CREATED).body(posts);
     }
