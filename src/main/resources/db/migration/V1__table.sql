@@ -60,17 +60,17 @@ CREATE TABLE IF NOT EXISTS  "votes" (
 
 CREATE INDEX IF NOT EXISTS posts_path on posts (path);
 CREATE INDEX IF NOT EXISTS posts_thread_path on posts (thread, path);
-CREATE INDEX IF NOT EXISTS posts_thread_parent_path on posts (thread, path, parent);
-CREATE INDEX IF NOT EXISTS posts_author on posts (lower(author));
-CREATE INDEX IF NOT EXISTS posts_forum on posts (lower(forum));
-CREATE INDEX IF NOT EXISTS posts_forum_author on posts (lower(forum), lower(author));
-CREATE INDEX IF NOT EXISTS posts_thread on posts (thread);
+-- CREATE INDEX IF NOT EXISTS posts_thread_parent_path on posts (thread, path, parent);
+-- CREATE INDEX IF NOT EXISTS posts_author on posts (lower(author));
+-- CREATE INDEX IF NOT EXISTS posts_forum on posts (lower(forum));
+-- CREATE INDEX IF NOT EXISTS posts_forum_author on posts (lower(forum), lower(author));
+CREATE INDEX IF NOT EXISTS posts_thread on posts (thread, id);
 
 CREATE INDEX IF NOT EXISTS users_nickname on users (lower(nickname));
 
 CREATE INDEX IF NOT EXISTS threads_slug on threads (lower(slug));
 -- CREATE INDEX IF NOT EXISTS threads_forum on threads (lower(forum));
--- CREATE INDEX IF NOT EXISTS threads_forum_created on threads (lower(forum), created);
+CREATE INDEX IF NOT EXISTS threads_forum_created on threads (lower(forum), created);
 -- CREATE INDEX IF NOT EXISTS threads_forum_author on threads (lower(forum), lower(author));
 CREATE INDEX IF NOT EXISTS threads_votes on threads (votes);
 
@@ -81,6 +81,7 @@ CREATE INDEX IF NOT EXISTS votes_nickname_threadid on votes (lower(nickname), th
 CREATE INDEX IF NOT EXISTS votes_nickname_threadid_voice on votes (nickname, voice, threadid);
 
 
--- select * from posts where thread = 81 and path[1] =  ANY(select id from posts where parent = 0 and thread = 81 order by id);
+-- select * from posts where thread = 81 and path[1] = ANY (select id from posts where parent = 0 and thread = 81 order by id);
+-- (select * from posts where parent = 0 and thread = 81 order by id);
 
 
