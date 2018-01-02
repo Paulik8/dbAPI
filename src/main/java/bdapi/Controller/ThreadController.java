@@ -112,15 +112,17 @@ public class ThreadController {
 
         Vote checkVote = threadDAO.getVotebyVote(vote, thread);//голосовал ли он ранее
 
-        if (checkVote != null && (vote.getVoice()).equals(checkVote.getVoice())) {
-            return ResponseEntity.ok(threadDAO.getThreadById((int)thread.getId()));
-        }
         if (checkVote == null) {
 //            flag = 1;
 //            bool = true;
             threadDAO.createVote(thread, vote.getVoice()/*, flag*/);//прибавление голоса в ветке или уменьшение
             threadDAO.insert_or_update_Vote(vote, thread);
         }
+
+        if (checkVote != null && (vote.getVoice()).equals(checkVote.getVoice())) {
+            return ResponseEntity.ok(threadDAO.getThreadById((int)thread.getId()));
+        }
+
         if (checkVote != null && !(vote.getVoice().equals(checkVote.getVoice()))) {
 //            flag = 2;
 //            bool = false;
