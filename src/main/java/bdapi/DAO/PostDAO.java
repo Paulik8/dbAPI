@@ -139,11 +139,12 @@ public class PostDAO {
                 //object = new Object[] {post.getAuthor(), post.getForum(), post.getIsEdited(), post.getMessage(), post.getThread(), post.getParent(), post.getCreated()};
                 //post.setId(jdbc.queryForObject(SQL, object, Long.class));
                 //post.setId(jdbc.queryForObject(SQL, POST_MAPPER, post.getAuthor(), post.getForum(), post.getIsEdited(), post.getMessage(), post.getThread(), post.getParent(), post.getCreated()));
-                final String SQL_posts = "UPDATE \"forums\" SET posts = posts + 1 WHERE slug::CITEXT = ?::CITEXT";
-                jdbc.update(SQL_posts, post.getForum());
+
                 //setPath(parentPost, post);
                 //ind++;
             }
+            final String SQL_posts = "UPDATE \"forums\" SET posts = posts + ? WHERE slug::CITEXT = ?::CITEXT";
+            jdbc.update(SQL_posts, posts.size(), thread.getForum());
             pst.executeBatch();
             con.close();
             return 201;
