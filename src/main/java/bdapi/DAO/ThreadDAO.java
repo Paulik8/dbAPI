@@ -1,11 +1,10 @@
 package bdapi.DAO;
 
-import bdapi.models.Forum;
-import bdapi.models.Post;
+import bdapi.models.*;
 import bdapi.models.Thread;
-import bdapi.models.Vote;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -37,15 +36,21 @@ public class ThreadDAO {
 //
 //    }
     //@Transactional(isolation = Isolation.READ_COMMITTED)
-    public void create(Thread thread) {
+    public Integer create(Thread thread, Forum forum, User user) {
         Object[] object;
         String SQL__id = "insert into \"threads\" (author, message, slug, title, forum, votes, created) VALUES(?,?,?,?,?,?,?) returning id";
         object = new Object[]{thread.getAuthor(), thread.getMessage(), thread.getSlug(), thread.getTitle(), thread.getForum(), thread.getVotes(), thread.getCreated()};
-        thread.setId(jdbc.queryForObject(SQL__id, object, Integer.class));
-        jdbc.update("INSERT INTO users_forum (forum, nick) VALUES (?,?) ON CONFLICT (forum, nick) DO NOTHING", thread.getForum(), thread.getAuthor());
+        try {
+            thread.setId(jdbc.queryForObject(SQL__id, object, Integer.class));
+        } catch (DuplicateKeyException e) {
+            return 409;
+        }
+        //jdbc.update("INSERT INTO users_forum_ex (forum, nickname, fullname, email, about) VALUES (?,?,?,?,?) ON CONFLICT (forum, nickname) DO NOTHING", forum.getId(), thread.getAuthor(), user.getFullname(), user.getEmail(), user.getAbout());
+        jdbc.update("INSERT INTO users_forum (forumid, nickname, fullname, email, about) VALUES (?,?,?,?,?) ON CONFLICT (forumid, nickname) DO NOTHING", forum.getId(), user.getNickname(), user.getFullname(), user.getEmail(), user.getAbout());
 
         final String SQL_UP_FORUM = "UPDATE \"forums\" SET threads = threads + 1 WHERE slug::citext = ?::citext";
         jdbc.update(SQL_UP_FORUM, thread.getForum());
+        return 201;
     }
     public void change(Thread thread) {
         String SQL = "update \"threads\" set message = ?, title = ? where slug::citext = ?::citext";// + where
@@ -74,11 +79,6 @@ public class ThreadDAO {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
-    }
-
-    public List<Thread> getThreadByForum (String forum) {
-        String SQL = "select * from \"threads\" where forum::citext = ?::citext";
-        return jdbc.query(SQL, THREAD_MAPPER, forum);
     }
 
     public List<Thread> getThreads (Forum forum, Integer limit, String since, Boolean flag) {

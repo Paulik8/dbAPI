@@ -78,13 +78,21 @@ public class ForumController {
             if (forum == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find author or forum"));
             }
-        try {
-            body.setForum(forum.getSlug());
-            threadDAO.create(body);
-        }   catch (DuplicateKeyException e) {
+        body.setForum(forum.getSlug());
+        Integer res = threadDAO.create(body, forum, user);
+        if (res == 409) {
             thread = threadDAO.getThreadBySlug(body.getSlug());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(thread);
         }
+
+//        try {
+//            body.setForum(forum.getSlug());
+//            threadDAO.create(body, forum, user);
+//        }   catch (DuplicateKeyException e) {
+//            thread = threadDAO.getThreadBySlug(body.getSlug());
+//            return ResponseEntity.status(HttpStatus.CONFLICT).body(thread);
+//        }
+
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
@@ -114,7 +122,8 @@ public class ForumController {
         forum = forumDAO.getForumbySlug(slug);
         if (forum == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find forum"));
-        users = userDAO.getUsers(forum.getSlug(), limit, since, desc);
+        //users = userDAO.getUsers(forum.getSlug(), limit, since, desc);
+        users = userDAO.getUsers(forum.getId(), limit, since, desc);
         if (users == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find users"));
         }

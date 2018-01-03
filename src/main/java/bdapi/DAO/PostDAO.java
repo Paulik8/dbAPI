@@ -1,9 +1,7 @@
 package bdapi.DAO;
 
-import bdapi.models.Message;
+import bdapi.models.*;
 import bdapi.models.Thread;
-import bdapi.models.Post;
-import bdapi.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -26,27 +24,27 @@ import java.util.*;
 @Transactional
 public class PostDAO {
     private final JdbcTemplate jdbc;
-    private final UserDAO userDAO;
     private static final PostMapper POST_MAPPER = new PostMapper();
 
     @Autowired
     public PostDAO(JdbcTemplate jdbc, UserDAO userDAO) {
         this.jdbc = jdbc;
-        this.userDAO = userDAO;
     }
 
-    public void insertUser(Thread thread, User user) {
-        jdbc.update("INSERT INTO users_forum (forum, nick) VALUES (?,?) ON CONFLICT (forum, nick) DO NOTHING", thread.getForum(), user.getNickname());
+    public void insertUser(Forum forum, User user) {
+        //jdbc.update("INSERT INTO users_forum_ex (forum, nickname, fullname, email, about) VALUES (?,?,?,?,?) ON CONFLICT (forum, nickname) DO NOTHING", forum.getId(), thread.getAuthor(), user.getFullname(), user.getEmail(), user.getAbout());
+        jdbc.update("INSERT INTO users_forum (forumid, nickname, fullname, email, about) VALUES (?,?,?,?,?) ON CONFLICT (forumid, nickname) DO NOTHING", forum.getId(), user.getNickname(), user.getFullname(), user.getEmail(), user.getAbout());
     }
 
     //@Transactional(isolation = Isolation.Rea)
     public int create (List<Post> posts, Thread thread) throws SQLException {
+        User user;
         //GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         //Object[] object;
         //Integer ind = 0;
         //Long result;
         Connection con = jdbc.getDataSource().getConnection();
-        con.setAutoCommit(false);
+        //con.setAutoCommit(false);
              //PreparedStatement pst;
 //        //jdbc.update(con -> {
              PreparedStatement pst = con.prepareStatement(
@@ -57,23 +55,26 @@ public class PostDAO {
             //Long ids = jdbc.queryForObject("SELECT nextval('posts_id_seq')", Long.class);
             //System.out.print(ids + "ku" + "\n");
             for (Post post : posts) {
+
                 //result = ids + ind;
                 ArrayList arrObj;
                 /////
-//                post.setForum(thread.getForum());
-//                post.setThread(thread.getId());
-////            System.out.println(thread.getId());
-////                    System.out.println(post.getThread());
-//                //if (postDAO.getAuthorByNickname(post.getAuthor()).size() == 0) {
-//                if (userDAO.getUserbyNickname(post.getAuthor()) == null) {
+                //post.setForum(thread.getForum());
+                //post.setThread(thread.getId());
+                //user = userDAO.getUserbyNickname(post.getAuthor());
+//            System.out.println(thread.getId());
+//                    System.out.println(post.getThread());
+                //if (postDAO.getAuthorByNickname(post.getAuthor()).size() == 0) {
+//                if (user == null) {
 //                    return 404;
 //                }
                 Post parentPost = getPostbyId((int) post.getParent());
-//                Post check = getChild(post.getParent());
-//                if ((parentPost == null || check == null) &&
-//                        post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
-//                    return 409;
-//                }
+                Post check = getChild(post.getParent());
+                if ((parentPost == null || check == null) &&
+                        post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
+                    return 409;
+                }
+                //insertUser(thread, /*forum,*/ user);
                 ///////
                 //Post parentPost = getPostbyId((int)post.getParent());
                 post.setCreated(posts.get(0).getCreated());
@@ -157,7 +158,7 @@ public class PostDAO {
 
             }
             pst.executeBatch();
-            con.commit();
+            //con.commit();
             con.close();
 
             final String SQL_posts = "UPDATE \"forums\" SET posts = posts + ? WHERE slug::CITEXT = ?::CITEXT";

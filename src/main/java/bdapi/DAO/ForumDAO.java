@@ -37,6 +37,7 @@ public class ForumDAO {
     private static final class ForumMapper implements RowMapper<Forum> {
         public Forum mapRow(ResultSet resultSet, int i) throws SQLException {
             Forum forum = new Forum();
+            forum.setId(resultSet.getInt("id"));
             forum.setSlug(resultSet.getString("slug"));
             forum.setTitle(resultSet.getString("title"));
             forum.setUser(resultSet.getString("creator"));

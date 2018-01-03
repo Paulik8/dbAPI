@@ -4,6 +4,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Forum {
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    private int id;
     private long posts;
     private String slug;
     private int threads;
@@ -11,11 +20,13 @@ public class Forum {
     private String user;
 
     @JsonCreator
-    public Forum(@JsonProperty("posts") int posts,
+    public Forum(@JsonProperty("id") int id,
+                 @JsonProperty("posts") int posts,
                  @JsonProperty("slug") String slug,
                  @JsonProperty("threads") int threads,
                  @JsonProperty("user") String user,
                  @JsonProperty("title") String title) {
+        this.id = id;
         this.posts = posts;
         this.slug = slug;
         this.threads = threads;

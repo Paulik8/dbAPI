@@ -1,5 +1,6 @@
 package bdapi.Controller;
 
+import bdapi.DAO.ForumDAO;
 import bdapi.DAO.PostDAO;
 import bdapi.DAO.ThreadDAO;
 import bdapi.DAO.UserDAO;
@@ -19,12 +20,14 @@ public class ThreadController {
     private final ThreadDAO threadDAO;
     private final PostDAO postDAO;
     private final UserDAO userDAO;
+    private final ForumDAO forumDAO;
 
     @Autowired
-    public ThreadController(ThreadDAO threadDAO, PostDAO postDAO, UserDAO userDAO) {
+    public ThreadController(ThreadDAO threadDAO, PostDAO postDAO, UserDAO userDAO, ForumDAO forumDAO) {
         this.threadDAO = threadDAO;
         this.postDAO = postDAO;
         this.userDAO = userDAO;
+        this.forumDAO = forumDAO;
     }
 
     public Thread CheckIdOrSlug (String slug_or_id) {
@@ -43,6 +46,7 @@ public class ThreadController {
                                      @RequestBody List<Post> posts) throws SQLException {
 
         Thread thread;
+        Forum forum;
         User user;
         List<Post> newPosts;
             thread = CheckIdOrSlug(slug);
@@ -50,6 +54,7 @@ public class ThreadController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found"));
         for (Post post : posts) {
             user = userDAO.getUserbyNickname(post.getAuthor());
+            forum = forumDAO.getForumbySlug(thread.getForum());
             post.setForum(thread.getForum());
             post.setThread(thread.getId());
 //            System.out.println(thread.getId());
@@ -58,13 +63,13 @@ public class ThreadController {
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found this author"));
             }
-            postDAO.insertUser(thread, user);
-            Post checkPost = postDAO.getPostbyId((int)post.getParent());
-            Post check = postDAO.getChild(post.getParent());
-            if ((checkPost == null || check == null) &&
-                    post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("conflict"));
-            }
+            postDAO.insertUser(forum, user);
+//            Post checkPost = postDAO.getPostbyId((int)post.getParent());
+//            Post check = postDAO.getChild(post.getParent());
+//            if ((checkPost == null || check == null) &&
+//                    post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
+//                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("conflict"));
+//            }
         }
 
 //        for (Post post : posts) {

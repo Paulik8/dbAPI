@@ -62,9 +62,22 @@ CREATE TABLE IF NOT EXISTS  "votes" (
 
 Create TABLE IF NOT EXISTS "users_forum" (
   id SERIAL NOT NULL PRIMARY KEY,
-  forum citext REFERENCES forums(slug),
-  nick citext REFERENCES users(nickname)
+  forumid INTEGER,
+  nickname CITEXT COLLATE ucs_basic NOT NULL,
+  fullname citext,
+  email CITEXT NOT NULL,
+  about TEXT
+  --forum citext REFERENCES forums(slug),
+  --nick citext REFERENCES users(nickname)
 );
+-- Create TABLE IF NOT EXISTS "users_forum_ex" (
+--     id SERIAL NOT NULL PRIMARY KEY,
+--     forum INTEGER REFERENCES forums(id),
+--     nickname citext,
+--     fullname citext,
+--     email CITEXT NOT NULL UNIQUE,
+--     about TEXT
+--   );
 
 CREATE INDEX IF NOT EXISTS posts_path on posts (path);
 CREATE INDEX IF NOT EXISTS posts_thread on posts (thread);
@@ -90,7 +103,8 @@ CREATE INDEX IF NOT EXISTS forums_slug on forums (slug);
 
 CREATE INDEX IF NOT EXISTS votes_nickname_threadid on votes (nickname, threadid);
 
-CREATE UNIQUE INDEX user_forums_forum_user on users_forum (forum, nick);
+CREATE UNIQUE INDEX user_forums_forum_user on users_forum (forumid, nickname);
+--CREATE UNIQUE INDEX user_forums_forum_user on users_forum_ex (forum, nickname);
 -- select nextval('posts_id_seq');
 -- CREATE INDEX IF NOT EXISTS votes_nickname_threadid_voice on votes (nickname, voice, threadid);
 
@@ -98,3 +112,4 @@ CREATE UNIQUE INDEX user_forums_forum_user on users_forum (forum, nick);
 -- select p.* from posts as p join (select id from posts where thread = 300 and parent = 0 order by id desc limit 3) as z on z.id = p.path[1] order by path;
 -- select * from posts where thread = 81 order by created, id;
 --select u.* from users u join users_forum  uf on u.nickname = uf.nick and uf.forum = 'azHKiO2448KE8' ORDER BY u.nickname;
+-- select uf.nickname, uf.fullname, uf.email, uf.about from users_forum uf where uf.forumid = 160;

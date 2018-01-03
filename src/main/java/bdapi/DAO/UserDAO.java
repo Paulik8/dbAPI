@@ -40,21 +40,22 @@ public class UserDAO{
         }
     }
 
-    public List<User> getUsers (String forum, Integer limit, String since, Boolean desc) {
+    public List<User> getUsers (Integer id, Integer limit, String since, Boolean desc) {
         try {
             List<Object> obj = new ArrayList<>();
-            String SQL =  "select u.* from users u join users_forum  uf on uf.forum = ? and uf.nick = u.nickname";
-            obj.add(forum);
+            //String SQL =  "select u.* from users u join users_forum  uf on uf.forum = ? and uf.nick = u.nickname";
+            String SQL = "select uf.nickname, uf.fullname, uf.email, uf.about from users_forum uf where uf.forumid = ?";
+            obj.add(id);
             if (since != null) {
                 if (desc != null && desc) {
-                    SQL +=  " where u.nickname::citext < ?::citext ";
+                    SQL +=  " and uf.nickname::citext < ?::citext ";
                 } else {
-                    SQL +=  " where u.nickname::citext > ?::citext ";
+                    SQL +=  " and uf.nickname::citext > ?::citext ";
                 }
                 obj.add(since);
             }
 
-            SQL += " order by u.nickname ";
+            SQL += " order by uf.nickname ";
             if (desc != null && desc) {
                 SQL += " desc ";
             }
