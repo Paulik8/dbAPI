@@ -43,23 +43,18 @@ public class UserDAO{
     public List<User> getUsers (String forum, Integer limit, String since, Boolean desc) {
         try {
             List<Object> obj = new ArrayList<>();
-            String SQL =  " select distinct z.* from (select distinct u1.* from users u1 join threads t on ((t.forum::citext = ?::citext) and (u1.nickname::citext = t.author::citext)) " +
-                    " UNION " +
-                    " select distinct u2.* from users u2 join posts p on (p.forum::citext = ?::citext) and (u2.nickname::citext = p.author::citext)) as z ";
-
+            String SQL =  "select u.* from users u join users_forum  uf on uf.forum = ? and uf.nick = u.nickname";
             obj.add(forum);
-            obj.add(forum);
-
             if (since != null) {
                 if (desc != null && desc) {
-                    SQL +=  " where nickname::citext < ?::citext ";
+                    SQL +=  " where u.nickname::citext < ?::citext ";
                 } else {
-                    SQL +=  " where nickname::citext > ?::citext ";
+                    SQL +=  " where u.nickname::citext > ?::citext ";
                 }
                 obj.add(since);
             }
 
-            SQL += " order by z.nickname ";
+            SQL += " order by u.nickname ";
             if (desc != null && desc) {
                 SQL += " desc ";
             }
@@ -73,11 +68,6 @@ public class UserDAO{
         } catch (DataAccessException e) {
             return null;
         }
-    }
-
-    public User getUserbyEmail(String email) {
-        final String SQL = "select * from \"users\" where LOWER(email) = LOWER(?)";
-        return jdbc.queryForObject(SQL, USER_MAPPER, email);
     }
 
     public void changeUser(User user) {

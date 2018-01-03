@@ -55,8 +55,18 @@ public class ServiceDAO {
         }
     }
 
+    public int getCountUsersForum() {
+        try {
+            String SQL = "SELECT count(*) FROM \"users_forum\"";
+            return jdbc.queryForObject(SQL, Integer.class);
+        }
+        catch (Exception e) {
+            return 0;
+        }
+    }
+
     public void clear() {
-        String SQL = "truncate table users, forums, threads, posts, votes";
+        String SQL = "truncate table users, forums, threads, posts, votes, users_forum";
         jdbc.execute(SQL);
     }
 

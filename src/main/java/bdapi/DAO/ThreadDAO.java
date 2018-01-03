@@ -42,6 +42,7 @@ public class ThreadDAO {
         String SQL__id = "insert into \"threads\" (author, message, slug, title, forum, votes, created) VALUES(?,?,?,?,?,?,?) returning id";
         object = new Object[]{thread.getAuthor(), thread.getMessage(), thread.getSlug(), thread.getTitle(), thread.getForum(), thread.getVotes(), thread.getCreated()};
         thread.setId(jdbc.queryForObject(SQL__id, object, Integer.class));
+        jdbc.update("INSERT INTO users_forum (forum, nick) VALUES (?,?) ON CONFLICT (forum, nick) DO NOTHING", thread.getForum(), thread.getAuthor());
 
         final String SQL_UP_FORUM = "UPDATE \"forums\" SET threads = threads + 1 WHERE slug::citext = ?::citext";
         jdbc.update(SQL_UP_FORUM, thread.getForum());

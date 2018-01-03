@@ -43,26 +43,29 @@ public class ThreadController {
                                      @RequestBody List<Post> posts) throws SQLException {
 
         Thread thread;
+        User user;
         List<Post> newPosts;
             thread = CheckIdOrSlug(slug);
             if (thread == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found"));
-        //for (Post post : posts) {
-//            post.setForum(thread.getForum());
-//            post.setThread(thread.getId());
-////            System.out.println(thread.getId());
-////                    System.out.println(post.getThread());
-//            //if (postDAO.getAuthorByNickname(post.getAuthor()).size() == 0) {
-//            if (userDAO.getUserbyNickname(post.getAuthor()) == null) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found this author"));
-//            }
-//            Post checkPost = postDAO.getPostbyId((int)post.getParent());
-//            Post check = postDAO.getChild(post.getParent());
-//            if ((checkPost == null || check == null) &&
-//                    post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
-//                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("conflict"));
-//            }
-        //}
+        for (Post post : posts) {
+            user = userDAO.getUserbyNickname(post.getAuthor());
+            post.setForum(thread.getForum());
+            post.setThread(thread.getId());
+//            System.out.println(thread.getId());
+//                    System.out.println(post.getThread());
+            //if (postDAO.getAuthorByNickname(post.getAuthor()).size() == 0) {
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found this author"));
+            }
+            postDAO.insertUser(thread, user);
+            Post checkPost = postDAO.getPostbyId((int)post.getParent());
+            Post check = postDAO.getChild(post.getParent());
+            if ((checkPost == null || check == null) &&
+                    post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("conflict"));
+            }
+        }
 
 //        for (Post post : posts) {
 //

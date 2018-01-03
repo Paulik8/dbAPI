@@ -3,6 +3,7 @@ package bdapi.DAO;
 import bdapi.models.Message;
 import bdapi.models.Thread;
 import bdapi.models.Post;
+import bdapi.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -13,6 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.xml.crypto.Data;
@@ -33,39 +35,46 @@ public class PostDAO {
         this.userDAO = userDAO;
     }
 
+    public void insertUser(Thread thread, User user) {
+        jdbc.update("INSERT INTO users_forum (forum, nick) VALUES (?,?) ON CONFLICT (forum, nick) DO NOTHING", thread.getForum(), user.getNickname());
+    }
 
+    //@Transactional(isolation = Isolation.Rea)
     public int create (List<Post> posts, Thread thread) throws SQLException {
         //GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         //Object[] object;
         //Integer ind = 0;
         //Long result;
-        try (Connection con = jdbc.getDataSource().getConnection();
+        Connection con = jdbc.getDataSource().getConnection();
+        con.setAutoCommit(false);
              //PreparedStatement pst;
 //        //jdbc.update(con -> {
              PreparedStatement pst = con.prepareStatement(
                      "INSERT INTO \"posts\" (id, author, forum, isedited, message, thread, parent, created, path)" +
-                             " VALUES(?,?,?,?,?,?,?,?::TIMESTAMP,?)")) {
+                             " VALUES(?,?,?,?,?,?,?,?::TIMESTAMP,?)");
 
             //String SQL = "insert into \"posts\" (author, forum, isedited, message, thread, parent, created, id, path) VALUES(?,?,?,?,?,?,?::timestamp,?, ?)";
             //Long ids = jdbc.queryForObject("SELECT nextval('posts_id_seq')", Long.class);
             //System.out.print(ids + "ku" + "\n");
             for (Post post : posts) {
                 //result = ids + ind;
-                ArrayList arrObj = new ArrayList<Object>();
-                post.setForum(thread.getForum());
-                post.setThread(thread.getId());
-//            System.out.println(thread.getId());
-//                    System.out.println(post.getThread());
-                //if (postDAO.getAuthorByNickname(post.getAuthor()).size() == 0) {
-                if (userDAO.getUserbyNickname(post.getAuthor()) == null) {
-                    return 404;
-                }
+                ArrayList arrObj;
+                /////
+//                post.setForum(thread.getForum());
+//                post.setThread(thread.getId());
+////            System.out.println(thread.getId());
+////                    System.out.println(post.getThread());
+//                //if (postDAO.getAuthorByNickname(post.getAuthor()).size() == 0) {
+//                if (userDAO.getUserbyNickname(post.getAuthor()) == null) {
+//                    return 404;
+//                }
                 Post parentPost = getPostbyId((int) post.getParent());
-                Post check = getChild(post.getParent());
-                if ((parentPost == null || check == null) &&
-                        post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
-                    return 409;
-                }
+//                Post check = getChild(post.getParent());
+//                if ((parentPost == null || check == null) &&
+//                        post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
+//                    return 409;
+//                }
+                ///////
                 //Post parentPost = getPostbyId((int)post.getParent());
                 post.setCreated(posts.get(0).getCreated());
 //            //
@@ -142,15 +151,22 @@ public class PostDAO {
 
                 //setPath(parentPost, post);
                 //ind++;
+//                jdbc.update("INSERT INTO users_forum (forum, nick) VALUES (?,?) ON CONFLICT (forum, nick) DO NOTHING", thread.getForum(), post.getAuthor());
+//                final String SQL_posts = "UPDATE \"forums\" SET posts = posts + 1 WHERE slug::CITEXT = ?::CITEXT";
+//                jdbc.update(SQL_posts, thread.getForum());
+
             }
+            pst.executeBatch();
+            con.commit();
+            con.close();
+
             final String SQL_posts = "UPDATE \"forums\" SET posts = posts + ? WHERE slug::CITEXT = ?::CITEXT";
             jdbc.update(SQL_posts, posts.size(), thread.getForum());
-            pst.executeBatch();
-            con.close();
+
             return 201;
-        }
     };
 
+    @Transactional
     public Post getDetails(Integer id) {
         try {
             String SQL = "SELECT * FROM \"posts\" WHERE id = ?";
@@ -159,46 +175,8 @@ public class PostDAO {
             return null;
         }
     }
-    //@Transactional
-    private void setPath(Post parentPost, Post childPost) {
-        jdbc.update(con -> {
-            PreparedStatement pst = con.prepareStatement(
-                    "update posts set" +
-                            "  path = ? " +
-                            "where id = ?");
-            if (childPost.getParent() == 0) {
-                ArrayList arr = new ArrayList<Object>(Arrays.asList(childPost.getId()));
-                pst.setArray(1, con.createArrayOf("int", arr.toArray()));
-            } else {
-                if (parentPost.getPath() == null) {
-                    ArrayList arr = new ArrayList<Object>(Arrays.asList(0));
-                    arr.add(childPost.getId());
-                    pst.setArray(1, con.createArrayOf("int", arr.toArray()));
-                } else {
-                    ArrayList arr = new ArrayList<Object>(Arrays.asList(parentPost.getPath()));
-                    arr.add(childPost.getId());
-                    pst.setArray(1, con.createArrayOf("int", arr.toArray()));
-                }
-            }
-            pst.setLong(2, childPost.getId());
-            return pst;
-        });
 
-        //List<Object> obj = new ArrayList<>();
-//        Array arr;
-//        Object[] obj;
-//        if (childPost.getParent() == 0) {
-//            //obj.add(childPost.getId());
-//            obj = new Object[] {childPost.getId()};
-//        } else {
-//            //obj.add(parentPost.getPath());
-//            //obj.add(childPost.getId());
-//            obj = new Object[] {parentPost.getPath(), childPost.getId()};
-//        }
-//        String SQL = "update \"posts\" set path = ? where id = ?";
-//        jdbc.update(SQL,  obj, childPost.getId());
-    }
-    //@Transactional
+    @Transactional
     public void changeMessage(Integer id, String message) {
         String SQL;
         if (message == null) {
@@ -212,6 +190,7 @@ public class PostDAO {
     }
 
 
+    @Transactional
     public Post getPostbyId(Integer id) {
         try {
             String SQL = "SELECT * FROM \"posts\" WHERE id = ?";
@@ -221,6 +200,7 @@ public class PostDAO {
         }
     }
 
+    @Transactional
     public Post getChild(Long parent) {
         try {
             String SQL = "select * from \"posts\" where id = ?";
@@ -229,12 +209,6 @@ public class PostDAO {
             return null;
         }
     }
-
-    public List<Post> getPostByForum (String slug) {
-        String SQL = "select * from \"posts\" where forum::citext = ?::citext";
-        return jdbc.query(SQL,POST_MAPPER, slug);
-    }
-
 
     private static final class PostMapper implements RowMapper<Post> {
         public Post mapRow(ResultSet resultSet, int i) throws SQLException {
