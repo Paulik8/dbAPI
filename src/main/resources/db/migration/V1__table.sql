@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS "threads" (
 );
 
 CREATE TABLE IF NOT EXISTS "posts" (
-  id       SERIAL PRIMARY KEY,
+  id       SERIAL NOT NULL ,
   parent   INTEGER DEFAULT 0,
   author   CITEXT REFERENCES users (nickname),
   message  TEXT,
@@ -47,7 +47,10 @@ CREATE TABLE IF NOT EXISTS "posts" (
   forum    CITEXT REFERENCES forums (slug),
   created  TIMESTAMP WITH TIME ZONE,
   thread INTEGER REFERENCES threads (id),
-  path INT ARRAY
+  path INT ARRAY,
+  CONSTRAINT posts_pk PRIMARY KEY ("id")
+) WITH (
+OIDS=FALSE
 );
 
 CREATE TABLE IF NOT EXISTS  "votes" (
@@ -75,10 +78,10 @@ CREATE INDEX IF NOT EXISTS threads_forum_created on threads (forum, created);
 -- CREATE INDEX IF NOT EXISTS threads_forum_author on threads (lower(forum), lower(author));
 -- CREATE INDEX IF NOT EXISTS threads_votes on threads (votes);
 
-CREATE INDEX IF NOT EXISTS forums_slug on forums (slug, posts);
-CREATE INDEX IF NOT EXISTS forums_threads on forums (slug);
+CREATE INDEX IF NOT EXISTS forums_slug on forums (slug);
 
 CREATE INDEX IF NOT EXISTS votes_nickname_threadid on votes (nickname, threadid);
+-- select nextval('posts_id_seq');
 -- CREATE INDEX IF NOT EXISTS votes_nickname_threadid_voice on votes (nickname, voice, threadid);
 
 -- select * from posts where thread = 300 and path[1] = ANY (select id from posts where parent = 0 and thread = 300 order by id limit 3) ORDER BY path;

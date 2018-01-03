@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -39,34 +40,40 @@ public class ThreadController {
 
     @PostMapping(path = "/{slug_or_id}/create")
     public ResponseEntity createPost(@PathVariable(name = "slug_or_id") String slug,
-                                     @RequestBody List<Post> posts) {
+                                     @RequestBody List<Post> posts) throws SQLException {
 
         Thread thread;
         List<Post> newPosts;
             thread = CheckIdOrSlug(slug);
             if (thread == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found"));
-        for (Post post : posts) {
-            post.setForum(thread.getForum());
-            post.setThread(thread.getId());
-//            System.out.println(thread.getId());
-//                    System.out.println(post.getThread());
-            //if (postDAO.getAuthorByNickname(post.getAuthor()).size() == 0) {
-            if (userDAO.getUserbyNickname(post.getAuthor()) == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found this author"));
-            }
-            Post checkPost = postDAO.getPostbyId((int)post.getParent());
-            Post check = postDAO.getChild(post.getParent());
-            if ((checkPost == null || check == null) &&
-                    post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("conflict"));
-            }
-        }
+        //for (Post post : posts) {
+//            post.setForum(thread.getForum());
+//            post.setThread(thread.getId());
+////            System.out.println(thread.getId());
+////                    System.out.println(post.getThread());
+//            //if (postDAO.getAuthorByNickname(post.getAuthor()).size() == 0) {
+//            if (userDAO.getUserbyNickname(post.getAuthor()) == null) {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found this author"));
+//            }
+//            Post checkPost = postDAO.getPostbyId((int)post.getParent());
+//            Post check = postDAO.getChild(post.getParent());
+//            if ((checkPost == null || check == null) &&
+//                    post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
+//                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("conflict"));
+//            }
+        //}
 
 //        for (Post post : posts) {
 //
 //        }
-        postDAO.create(posts);
+        Integer res = postDAO.create(posts, thread);
+        if (res == 404) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found this author"));
+        }
+        if (res ==409) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("conflict"));
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(posts);
     }
 

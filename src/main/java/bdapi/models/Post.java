@@ -72,6 +72,7 @@ public class Post {
         this.created = created;
     }
 
+
     public String  getForum() {
         return forum;
     }

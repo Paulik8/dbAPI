@@ -33,7 +33,7 @@ public class UserDAO{
 
     public User getUserbyNickname(String nickname) {
         try {
-            final String SQL = "select * from users where LOWER(nickname) = LOWER(?)";
+            final String SQL = "select * from users where nickname::citext = ?::citext";
             return jdbc.queryForObject(SQL, USER_MAPPER, nickname);
         } catch (EmptyResultDataAccessException e) {
             return null;
