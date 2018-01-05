@@ -1,6 +1,5 @@
 FROM ubuntu:16.04
 
-
 MAINTAINER Khotin Paul
 
 # Update packages
