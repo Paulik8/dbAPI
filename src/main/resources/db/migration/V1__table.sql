@@ -7,8 +7,6 @@ DROP TABLE if EXISTS users_forum;
 DROP TABLE if EXISTS forums;
 DROP TABLE if EXISTS users;
 
-
-
 CREATE TABLE IF NOT EXISTS "users" (
   id SERIAL NOT NULL PRIMARY KEY,
   nickname CITEXT COLLATE ucs_basic NOT NULL UNIQUE,
@@ -32,6 +30,7 @@ CREATE TABLE IF NOT EXISTS "threads" (
   slug CITEXT UNIQUE,
   author CITEXT NOT NULL,
   forum CITEXT,
+  forumid INTEGER,
   created TIMESTAMP WITH TIME ZONE,
   message TEXT NOT NULL,
   title TEXT NOT NULL,
@@ -80,22 +79,26 @@ Create TABLE IF NOT EXISTS "users_forum" (
 --   );
 
 CREATE INDEX IF NOT EXISTS posts_path on posts (path);
+CREATE INDEX IF NOT EXISTS posts_path1 on posts ((path[1]));
 CREATE INDEX IF NOT EXISTS posts_thread on posts (thread);
 CREATE INDEX IF NOT EXISTS posts_id on posts (id);
 CREATE INDEX IF NOT EXISTS posts_parent on posts (parent);
--- CREATE INDEX IF NOT EXISTS posts_thread_path on posts (thread, path);//getPosts
--- CREATE INDEX IF NOT EXISTS posts_thread_id on posts (thread, id);//getPosts
---CREATE INDEX IF NOT EXISTS posts_id_thread_parent_path on posts (id, thread, parent, path);//getPosts
---CREATE INDEX IF NOT EXISTS posts_id_thread_parent on posts (id, thread, parent);//getPosts
+CREATE INDEX IF NOT EXISTS posts_thread_path_id on posts (thread, path, id);--getPosts
+--CREATE INDEX IF NOT EXISTS posts_thread_id on posts (thread, id);--getPosts
+CREATE INDEX IF NOT EXISTS posts_thread_parent_path on posts (thread, parent, path, id, (path[1]));--getPosts
+CREATE INDEX IF NOT EXISTS posts_thread_parent on posts (thread, parent, (path[1]));--getPosts
 CREATE INDEX IF NOT EXISTS posts_author on posts (author);
 CREATE INDEX IF NOT EXISTS posts_forum on posts (forum);
 
 CREATE INDEX IF NOT EXISTS users_nickname on users (nickname);
 CREATE INDEX IF NOT EXISTS users_email on users (email);
+--CREATE INDEX IF NOT EXISTS users_nickname_email on users (nickname, email);
 
 CREATE INDEX IF NOT EXISTS threads_slug on threads (slug);
 CREATE INDEX IF NOT EXISTS threads_forum on threads (forum);
-CREATE INDEX IF NOT EXISTS threads_forum_created on threads (forum, created);
+--CREATE INDEX IF NOT EXISTS threads_forumid on threads (forumid);
+--CREATE INDEX IF NOT EXISTS threads_created on threads (created);
+CREATE INDEX IF NOT EXISTS threads_forum_created on threads (forumid, created);
 -- CREATE INDEX IF NOT EXISTS threads_forum_author on threads (lower(forum), lower(author));
 -- CREATE INDEX IF NOT EXISTS threads_votes on threads (votes);
 
@@ -103,7 +106,10 @@ CREATE INDEX IF NOT EXISTS forums_slug on forums (slug);
 
 CREATE INDEX IF NOT EXISTS votes_nickname_threadid on votes (nickname, threadid);
 
-CREATE UNIQUE INDEX user_forums_forum_user on users_forum (forumid, nickname);
+--CREATE INDEX user_forums_forumid on users_forum (forumid);
+CREATE UNIQUE INDEX user_forums_forumid_user on users_forum (forumid, nickname);
+
+--CREATE INDEX user_forums_forumid on users_forum (forumid, nickname, fullname, email, about);
 --CREATE UNIQUE INDEX user_forums_forum_user on users_forum_ex (forum, nickname);
 -- select nextval('posts_id_seq');
 -- CREATE INDEX IF NOT EXISTS votes_nickname_threadid_voice on votes (nickname, voice, threadid);

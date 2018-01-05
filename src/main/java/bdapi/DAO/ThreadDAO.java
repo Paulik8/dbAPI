@@ -38,8 +38,8 @@ public class ThreadDAO {
     //@Transactional(isolation = Isolation.READ_COMMITTED)
     public Integer create(Thread thread, Forum forum, User user) {
         Object[] object;
-        String SQL__id = "insert into \"threads\" (author, message, slug, title, forum, votes, created) VALUES(?,?,?,?,?,?,?) returning id";
-        object = new Object[]{thread.getAuthor(), thread.getMessage(), thread.getSlug(), thread.getTitle(), thread.getForum(), thread.getVotes(), thread.getCreated()};
+        String SQL__id = "insert into \"threads\" (author, message, slug, title, forum, forumid, votes, created) VALUES(?,?,?,?,?,?,?, ?) returning id";
+        object = new Object[]{thread.getAuthor(), thread.getMessage(), thread.getSlug(), thread.getTitle(), thread.getForum(), forum.getId(), thread.getVotes(), thread.getCreated()};
         try {
             thread.setId(jdbc.queryForObject(SQL__id, object, Integer.class));
         } catch (DuplicateKeyException e) {
@@ -82,10 +82,11 @@ public class ThreadDAO {
     }
 
     public List<Thread> getThreads (Forum forum, Integer limit, String since, Boolean flag) {
-        String SQL = "select * from \"threads\" where forum::citext = ?::citext";
+        String SQL = "select * from \"threads\" where forumid = ?";
         List<Object> obj = new ArrayList<>();
-        String slug = forum.getSlug();
-        obj.add(slug);
+        //String slug = forum.getSlug();
+        obj.add(forum.getId());
+       // obj.add(slug);
         if (since != null) {
             if (flag != null && flag) {
                 SQL += " AND created";
@@ -243,6 +244,7 @@ public class ThreadDAO {
 //            thread.setCreated(format.format(created));
             //thread.setCreated(resultSet.getString("created"));
             thread.setId(resultSet.getInt("id"));
+            thread.setForumid(resultSet.getInt("forumid"));
             thread.setVotes(resultSet.getInt("votes"));
             return thread;
         }

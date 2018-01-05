@@ -77,8 +77,8 @@ public class UserDAO{
     }
 
     public List<User> getAlreadyUser(final User user) {
-        final String SQL = "select * from users where LOWER(email) = LOWER(?) OR LOWER(nickname) = LOWER(?)";
-        return jdbc.query(SQL, USER_MAPPER, user.getEmail(), user.getNickname());
+        final String SQL = "select * from users where LOWER(nickname) = LOWER(?) OR LOWER(email) = LOWER(?)";
+        return jdbc.query(SQL, USER_MAPPER, user.getNickname(), user.getEmail());
     }
 
 private static final class UserMapper implements RowMapper<User> {

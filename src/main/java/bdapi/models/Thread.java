@@ -12,6 +12,7 @@ public class Thread {
     //private String created;
     private String forum;
     private int id;
+    private int forumid;
     private String message;
     private String slug;
     private String title;
@@ -20,12 +21,21 @@ public class Thread {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date created;
 
+    public int getForumid() {
+        return forumid;
+    }
+
+    public void setForumid(int forumid) {
+        this.forumid = forumid;
+    }
+
     @JsonCreator
         public Thread(
             @JsonProperty("author") String author,
             @JsonProperty("created") Date created,
             @JsonProperty("forum") String forum,
             @JsonProperty("id") int id,
+            @JsonProperty("forumid") int forumid,
             @JsonProperty("message") String message,
             @JsonProperty("slug") String slug,
             @JsonProperty("title") String title,
@@ -46,6 +56,8 @@ public class Thread {
 //            this.created = created.toInstant().toString();
         this.forum = forum;
         this.id = id;
+
+        this.forumid = forumid;
         this.message = message;
         this.slug = slug;
         this.title = title;
