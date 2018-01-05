@@ -36,11 +36,6 @@ public class ForumController {
     public ResponseEntity create(@RequestBody Forum forum) {
         User user;
         user = userDAO.getUserbyNickname(forum.getUser());
-//        try {
-//            user = userDAO.getUserbyNickname(forum.getUser());
-//        } catch (DataAccessException e) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cant find user"));
-//        }
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cant find user"));
         }
@@ -84,15 +79,6 @@ public class ForumController {
             thread = threadDAO.getThreadBySlug(body.getSlug());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(thread);
         }
-
-//        try {
-//            body.setForum(forum.getSlug());
-//            threadDAO.create(body, forum, user);
-//        }   catch (DuplicateKeyException e) {
-//            thread = threadDAO.getThreadBySlug(body.getSlug());
-//            return ResponseEntity.status(HttpStatus.CONFLICT).body(thread);
-//        }
-
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
@@ -122,31 +108,10 @@ public class ForumController {
         forum = forumDAO.getForumbySlug(slug);
         if (forum == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find forum"));
-        //users = userDAO.getUsers(forum.getSlug(), limit, since, desc);
         users = userDAO.getUsers(forum.getId(), limit, since, desc);
         if (users == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find users"));
         }
-//        threads = threadDAO.getThreadByForum(forum);//Лист веток форума
-//        for (Thread thread: threads) {
-//            ThreadUser = thread.getAuthor();// может быть добавить условие if thread.getSlug != null
-//            if (!ThreadUsers.contains(userDAO.getUserbyNickname(ThreadUser))) {
-//                ThreadUsers.add(userDAO.getUserbyNickname(ThreadUser));//массив пользователей у которых есть ветка
-//            }
-//        }
-//        posts = postDAO.getPostByForum(forum);//Лист постов форума
-//        for (Post post : posts) {
-//            PostUser = post.getAuthor();
-//            if (!PostUsers.contains(userDAO.getUserbyNickname(PostUser))) {
-//                PostUsers.add(userDAO.getUserbyNickname(PostUser));//массив пользователей у которых есть пост на форуме
-//            }
-//        }
-//
-//        for (User user : ThreadUsers) {
-//            if (!PostUsers.contains(user)) {
-//                PostUsers.add(user);
-//            }
-//        }
         return ResponseEntity.ok(users);
     }
 }

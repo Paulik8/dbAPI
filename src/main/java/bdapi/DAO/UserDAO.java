@@ -43,15 +43,11 @@ public class UserDAO{
     public List<User> getUsers (Integer id, Integer limit, String since, Boolean desc) {
         try {
             List<Object> obj = new ArrayList<>();
-            //String SQL =  "select u.* from users u join users_forum  uf on uf.forum = ? and uf.nick = u.nickname";
+            String asc = desc ? "<" : ">";
             String SQL = "select uf.nickname, uf.fullname, uf.email, uf.about from users_forum uf where uf.forumid = ?";
             obj.add(id);
             if (since != null) {
-                if (desc != null && desc) {
-                    SQL +=  " and uf.nickname::citext < ?::citext ";
-                } else {
-                    SQL +=  " and uf.nickname::citext > ?::citext ";
-                }
+                SQL +=  " and uf.nickname::citext" + asc + " ?::citext ";
                 obj.add(since);
             }
 
@@ -71,13 +67,50 @@ public class UserDAO{
         }
     }
 
-    public void changeUser(User user) {
-        final String SQL = "update \"users\" set" + " fullname = COALESCE(?, fullname)," + "email = COALESCE(?, email)," + "about = COALESCE(?, about)" + "where nickname::citext = ?::citext";
-        jdbc.update(SQL, user.getFullname(), user.getEmail(), user.getAbout(), user.getNickname());
+    public Integer changeUser(User user) {
+        List<Object> obj = new ArrayList<>();
+        Boolean full = true;
+        Boolean email = true;
+        Boolean about = true;
+        if (user.getFullname() == null && user.getEmail() == null && user.getAbout() == null) {
+            return 202;
+        }
+        String SQL = "update \"users\" set";
+        if (user.getFullname() != null) {
+            SQL += " fullname = ?";
+            full = false;
+            obj.add(user.getFullname());
+        }
+        if (user.getEmail() != null) {
+            if (!full) {
+                SQL += ", email = ?";
+                email = false;
+            } else {
+                SQL += " email = ?";
+                email = false;
+            }
+            obj.add(user.getEmail());
+        }
+        if (user.getAbout() != null) {
+            if (!full || !email) {
+                SQL += ", about = ? ";
+                about = false;
+            } else {
+                SQL += " about = ? ";
+                about = false;
+            }
+            obj.add(user.getAbout());
+        }
+        if (!full || !email || !about) {
+            SQL += " where nickname::citext = ?::citext ";
+            obj.add(user.getNickname());
+        }
+        jdbc.update(SQL, obj.toArray());
+        return 200;
     }
 
     public List<User> getAlreadyUser(final User user) {
-        final String SQL = "select * from users where LOWER(nickname) = LOWER(?) OR LOWER(email) = LOWER(?)";
+        final String SQL = "select * from users where nickname::citext = ?::citext OR email::citext = ?::citext";
         return jdbc.query(SQL, USER_MAPPER, user.getNickname(), user.getEmail());
     }
 

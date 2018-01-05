@@ -2,14 +2,12 @@ package bdapi.DAO;
 
 import bdapi.models.*;
 import bdapi.models.Thread;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
@@ -17,7 +15,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
 @Service
 @Transactional
@@ -30,12 +27,6 @@ public class ThreadDAO {
     @Autowired
     public ThreadDAO(JdbcTemplate jdbc) {this.jdbc = jdbc;}
 
-//    public void createThread (Thread thread) {
-//        final String SQL = "insert into \"threads\" (author, created, message, title) VALUES(?,?,?,?)";
-//        jdbc.update(SQL, thread.getAuthor(), thread.getCreated(), thread.getMessage(), thread.getTitle());
-//
-//    }
-    //@Transactional(isolation = Isolation.READ_COMMITTED)
     public Integer create(Thread thread, Forum forum, User user) {
         Object[] object;
         String SQL__id = "insert into \"threads\" (author, message, slug, title, forum, forumid, votes, created) VALUES(?,?,?,?,?,?,?, ?) returning id";
@@ -45,7 +36,6 @@ public class ThreadDAO {
         } catch (DuplicateKeyException e) {
             return 409;
         }
-        //jdbc.update("INSERT INTO users_forum_ex (forum, nickname, fullname, email, about) VALUES (?,?,?,?,?) ON CONFLICT (forum, nickname) DO NOTHING", forum.getId(), thread.getAuthor(), user.getFullname(), user.getEmail(), user.getAbout());
         jdbc.update("INSERT INTO users_forum (forumid, nickname, fullname, email, about) VALUES (?,?,?,?,?) ON CONFLICT (forumid, nickname) DO NOTHING", forum.getId(), user.getNickname(), user.getFullname(), user.getEmail(), user.getAbout());
 
         final String SQL_UP_FORUM = "UPDATE \"forums\" SET threads = threads + 1 WHERE slug::citext = ?::citext";
@@ -84,9 +74,7 @@ public class ThreadDAO {
     public List<Thread> getThreads (Forum forum, Integer limit, String since, Boolean flag) {
         String SQL = "select * from \"threads\" where forumid = ?";
         List<Object> obj = new ArrayList<>();
-        //String slug = forum.getSlug();
         obj.add(forum.getId());
-       // obj.add(slug);
         if (since != null) {
             if (flag != null && flag) {
                 SQL += " AND created";
@@ -110,10 +98,8 @@ public class ThreadDAO {
     }
 
     public void insert_or_update_Vote(Vote vote, Thread thread) {
-        //if (bool) {
             String SQL = "insert into \"votes\" (nickname, voice, threadid) VALUES(?, ?, ?)";
             jdbc.update(SQL, vote.getNickname(), vote.getVoice(), thread.getId());
-        //} else {
     }
 
     public void updateVote(Vote vote, Thread thread) {
@@ -133,10 +119,8 @@ public class ThreadDAO {
 
     public List<Post> getPosts(long threadId, Integer limit, Integer since, String sort, Boolean desc) {
         List<Object> myObj = new ArrayList<>();
-        List<Post> result = new ArrayList<>();
         String asc = desc ? "<" : ">";
         String myStr = "";
-//        myObj.add(threadId);
         if (sort == null)
             sort = "flat";
         switch (sort) {
@@ -144,11 +128,7 @@ public class ThreadDAO {
                 myStr = "select * from posts where thread = ? ";
                 myObj.add(threadId);
                 if (since != null) {
-                    //if (desc != null && desc) {
-                        myStr += " and id " + asc + "?";
-                    //} else {
-                        //myStr += " and id > ?";
-                    //}
+                    myStr += " and id " + asc + "?";
                     myObj.add(since);
                 }
                 myStr += " order by created ";
@@ -167,11 +147,7 @@ public class ThreadDAO {
                 myStr = "select * from posts where thread = ? ";
                 myObj.add(threadId);
                 if (since != null) {
-                    //if (desc != null && desc) {
-                        myStr += " and path" + asc +" (select path from posts where id = ?) ";
-                    //} else {
-                    //    myStr += " and path > (select path from posts where id = ?) ";
-                    //}
+                    myStr += " and path" + asc +" (select path from posts where id = ?) ";
                     myObj.add(since);
                 }
                 myStr += " order by path ";
@@ -186,45 +162,22 @@ public class ThreadDAO {
             case "parent_tree":
                 myStr += "select p.* from posts as p join";
                 if (since != null) {
-                    //myObj.add(threadId);
-                    //if (desc != null && desc) {
-                        myStr += " (select id from posts where thread = ? and parent = 0 and path" + asc + " (select path from posts where id = ?) order by id " + ((desc != null && desc) ? " desc " : "") + " limit ? ) as z on z.id = p.path[1]";
-
-                   // } else {
-                   //     myStr += " (select id from posts where thread = ? and parent = 0 and path > (select path from posts where id = ?) order by id limit ? ) as z on z.id = p.path[1] ";
-                    //}
+                    myStr += " (select id from posts where thread = ? and parent = 0 and path" + asc + " (select path from posts where id = ?) order by id " + ((desc != null && desc) ? " desc " : "") + " limit ? ) as z on z.id = p.path[1]";
                     myObj.add(threadId);
                     myObj.add(since);
                     myObj.add(limit);
                 } else if (limit != null) {
-                    //if (desc != null && desc) {
                         myStr += "(select id from posts where thread = ? and parent = 0 order by id " + ((desc != null && desc) ? " desc ": "") + " limit ?) as z on z.id = p.path[1]";
                         myObj.add(threadId);
                         myObj.add(limit);
-//                        myStr += " and path[1] =  ANY(select id  from posts where parent = 0 and thread = ? order by id desc limit ? ) ";
-                    //} else {
-//                        myStr += "(select id from posts where thread = ? and parent = 0 order by id limit ?) as z on z.id = p.path[1] order by path";
-//                        myObj.add(threadId);
-//                        myObj.add(limit);
-//  myStr += " and path[1] =  ANY(select id  from posts where parent = 0 and thread = ? order by id limit ? ) ";
-                        //myStr += " limit ?";
                     }
-//                    if (desc != null && desc) {
-//                        myStr += " desc ";
-//                    }
                     myStr += " order by path ";
                     if (desc != null && desc) {
                         myStr += " desc ";
                     }
                     break;
-                    //myObj.add(threadId);
-                    //myObj.add(limit);
-                }
-
-//                System.out.print(myStr);
-
+            }
         return jdbc.query(myStr, myObj.toArray(), POST_MAPPER);
-        //return result;
     }
 
 
@@ -237,12 +190,6 @@ public class ThreadDAO {
             thread.setMessage(resultSet.getString("message"));
             thread.setSlug(resultSet.getString("slug"));
             thread.setCreated(resultSet.getTimestamp("created"));
-//            Timestamp created = resultSet.getTimestamp("created");
-//            SimpleDateFormat format = new SimpleDateFormat(
-//                    "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
-//            format.setTimeZone(TimeZone.getTimeZone("UTC"));//здесь надо, а в пост нет????????
-//            thread.setCreated(format.format(created));
-            //thread.setCreated(resultSet.getString("created"));
             thread.setId(resultSet.getInt("id"));
             thread.setForumid(resultSet.getInt("forumid"));
             thread.setVotes(resultSet.getInt("votes"));
@@ -259,15 +206,12 @@ public class ThreadDAO {
             post.setMessage(resultSet.getString("message"));
             post.setThread(resultSet.getLong("thread"));
             post.setParent(resultSet.getLong("parent"));
-            //post.setPath((Object[])resultSet.getObject("path"));
             Array path = resultSet.getArray("path");
             post.setPath((Object[])path.getArray());
             Timestamp created = resultSet.getTimestamp("created");
             SimpleDateFormat format = new SimpleDateFormat(
                     "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
-            //format.setTimeZone(TimeZone.getTimeZone("UTC"));
             post.setCreated(format.format(created));
-            // post.setCreated(resultSet.getString("created"));
             post.setId(resultSet.getLong("id"));
             return post;
         }

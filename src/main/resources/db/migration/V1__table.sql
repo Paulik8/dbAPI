@@ -66,25 +66,14 @@ Create TABLE IF NOT EXISTS "users_forum" (
   fullname citext,
   email CITEXT NOT NULL,
   about TEXT
-  --forum citext REFERENCES forums(slug),
-  --nick citext REFERENCES users(nickname)
 );
--- Create TABLE IF NOT EXISTS "users_forum_ex" (
---     id SERIAL NOT NULL PRIMARY KEY,
---     forum INTEGER REFERENCES forums(id),
---     nickname citext,
---     fullname citext,
---     email CITEXT NOT NULL UNIQUE,
---     about TEXT
---   );
 
 CREATE INDEX IF NOT EXISTS posts_path on posts (path);
 CREATE INDEX IF NOT EXISTS posts_path1 on posts ((path[1]));
 CREATE INDEX IF NOT EXISTS posts_thread on posts (thread);
 CREATE INDEX IF NOT EXISTS posts_id on posts (id);
 CREATE INDEX IF NOT EXISTS posts_parent on posts (parent);
-CREATE INDEX IF NOT EXISTS posts_thread_path_id on posts (thread, path, id);--getPosts
---CREATE INDEX IF NOT EXISTS posts_thread_id on posts (thread, id);--getPosts
+CREATE INDEX IF NOT EXISTS posts_thread_path_id on posts (thread, path, id);
 CREATE INDEX IF NOT EXISTS posts_thread_parent_path on posts (thread, parent, path, id, (path[1]));--getPosts
 CREATE INDEX IF NOT EXISTS posts_thread_parent on posts (thread, parent, (path[1]));--getPosts
 CREATE INDEX IF NOT EXISTS posts_author on posts (author);
@@ -92,30 +81,13 @@ CREATE INDEX IF NOT EXISTS posts_forum on posts (forum);
 
 CREATE INDEX IF NOT EXISTS users_nickname on users (nickname);
 CREATE INDEX IF NOT EXISTS users_email on users (email);
---CREATE INDEX IF NOT EXISTS users_nickname_email on users (nickname, email);
 
 CREATE INDEX IF NOT EXISTS threads_slug on threads (slug);
 CREATE INDEX IF NOT EXISTS threads_forum on threads (forum);
---CREATE INDEX IF NOT EXISTS threads_forumid on threads (forumid);
---CREATE INDEX IF NOT EXISTS threads_created on threads (created);
 CREATE INDEX IF NOT EXISTS threads_forum_created on threads (forumid, created);
--- CREATE INDEX IF NOT EXISTS threads_forum_author on threads (lower(forum), lower(author));
--- CREATE INDEX IF NOT EXISTS threads_votes on threads (votes);
 
 CREATE INDEX IF NOT EXISTS forums_slug on forums (slug);
 
 CREATE INDEX IF NOT EXISTS votes_nickname_threadid on votes (nickname, threadid);
 
---CREATE INDEX user_forums_forumid on users_forum (forumid);
 CREATE UNIQUE INDEX user_forums_forumid_user on users_forum (forumid, nickname);
-
---CREATE INDEX user_forums_forumid on users_forum (forumid, nickname, fullname, email, about);
---CREATE UNIQUE INDEX user_forums_forum_user on users_forum_ex (forum, nickname);
--- select nextval('posts_id_seq');
--- CREATE INDEX IF NOT EXISTS votes_nickname_threadid_voice on votes (nickname, voice, threadid);
-
--- select * from posts where thread = 300 and path[1] = ANY (select id from posts where parent = 0 and thread = 300 order by id limit 3) ORDER BY path;
--- select p.* from posts as p join (select id from posts where thread = 300 and parent = 0 order by id desc limit 3) as z on z.id = p.path[1] order by path;
--- select * from posts where thread = 81 order by created, id;
---select u.* from users u join users_forum  uf on u.nickname = uf.nick and uf.forum = 'azHKiO2448KE8' ORDER BY u.nickname;
--- select uf.nickname, uf.fullname, uf.email, uf.about from users_forum uf where uf.forumid = 160;

@@ -48,7 +48,6 @@ public class ThreadController {
         Thread thread;
         Forum forum;
         User user;
-        List<Post> newPosts;
             thread = CheckIdOrSlug(slug);
             if (thread == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found"));
@@ -57,24 +56,11 @@ public class ThreadController {
             forum = forumDAO.getForumbySlug(thread.getForum());
             post.setForum(thread.getForum());
             post.setThread(thread.getId());
-//            System.out.println(thread.getId());
-//                    System.out.println(post.getThread());
-            //if (postDAO.getAuthorByNickname(post.getAuthor()).size() == 0) {
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found this author"));
             }
             postDAO.insertUser(forum, user);
-//            Post checkPost = postDAO.getPostbyId((int)post.getParent());
-//            Post check = postDAO.getChild(post.getParent());
-//            if ((checkPost == null || check == null) &&
-//                    post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
-//                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("conflict"));
-//            }
         }
-
-//        for (Post post : posts) {
-//
-//        }
         Integer res = postDAO.create(posts, thread);
         if (res == 404) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("not found this author"));
@@ -120,8 +106,6 @@ public class ThreadController {
                                   @RequestBody Vote vote) {
 
         Thread thread;
-        Integer flag = null;
-        Boolean bool = null;
         thread = CheckIdOrSlug(slug_or_id);
         if (thread == null || userDAO.getUserbyNickname(vote.getNickname()) == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("cant find thread"));
@@ -129,8 +113,6 @@ public class ThreadController {
         Vote checkVote = threadDAO.getVotebyVote(vote, thread);//голосовал ли он ранее
 
         if (checkVote == null) {
-//            flag = 1;
-//            bool = true;
             threadDAO.createVote(thread, vote.getVoice()/*, flag*/);//прибавление голоса в ветке или уменьшение
             threadDAO.insert_or_update_Vote(vote, thread);
         }
@@ -140,25 +122,9 @@ public class ThreadController {
         }
 
         if (checkVote != null && !(vote.getVoice().equals(checkVote.getVoice()))) {
-//            flag = 2;
-//            bool = false;
             threadDAO.createVote(thread, (vote.getVoice() * 2)/*, flag*/);//прибавление голоса в ветке или уменьшение
             threadDAO.updateVote(vote, thread);
         }
-//            threadDAO.createVote(thread, vote.getVoice() * flag);//прибавление голоса в ветке или уменьшение
-//            threadDAO.insert_or_update_Vote(vote, thread, bool);
-            //flag = 0;//не голосовал
-
-//        if (checkVote != null && !(vote.getVoice().equals(checkVote.getVoice()))) {
-//            flag = 2;
-//            threadDAO.createVote(thread, vote.getVoice() * flag);//прибавление голоса в ветке или уменьшение
-//            threadDAO.updateVote(vote, thread);
-//           // flag = vote.getVoice();//да голосовал
-//        }
-
-        //Vote getvote = threadDAO.getVote(vote);
-        //if (getvote.getVoice() != 0)
-
         return ResponseEntity.ok(CheckIdOrSlug(slug_or_id));
     }
 

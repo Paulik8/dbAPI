@@ -5,17 +5,11 @@ import bdapi.models.Thread;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.xml.crypto.Data;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -27,109 +21,41 @@ public class PostDAO {
     private static final PostMapper POST_MAPPER = new PostMapper();
 
     @Autowired
-    public PostDAO(JdbcTemplate jdbc, UserDAO userDAO) {
+    public PostDAO(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
 
     public void insertUser(Forum forum, User user) {
-        //jdbc.update("INSERT INTO users_forum_ex (forum, nickname, fullname, email, about) VALUES (?,?,?,?,?) ON CONFLICT (forum, nickname) DO NOTHING", forum.getId(), thread.getAuthor(), user.getFullname(), user.getEmail(), user.getAbout());
         jdbc.update("INSERT INTO users_forum (forumid, nickname, fullname, email, about) VALUES (?,?,?,?,?) ON CONFLICT (forumid, nickname) DO NOTHING", forum.getId(), user.getNickname(), user.getFullname(), user.getEmail(), user.getAbout());
     }
 
-    //@Transactional(isolation = Isolation.Rea)
     public int create (List<Post> posts, Thread thread) throws SQLException {
-        User user;
-        //GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-        //Object[] object;
-        //Integer ind = 0;
-        //Long result;
         Connection con = jdbc.getDataSource().getConnection();
-        //con.setAutoCommit(false);
-             //PreparedStatement pst;
-//        //jdbc.update(con -> {
              PreparedStatement pst = con.prepareStatement(
                      "INSERT INTO \"posts\" (id, author, forum, isedited, message, thread, parent, created, path)" +
                              " VALUES(?,?,?,?,?,?,?,?::TIMESTAMP,?)");
-
-            //String SQL = "insert into \"posts\" (author, forum, isedited, message, thread, parent, created, id, path) VALUES(?,?,?,?,?,?,?::timestamp,?, ?)";
-            //Long ids = jdbc.queryForObject("SELECT nextval('posts_id_seq')", Long.class);
-            //System.out.print(ids + "ku" + "\n");
             for (Post post : posts) {
-
-                //result = ids + ind;
                 ArrayList arrObj;
-                /////
-                //post.setForum(thread.getForum());
-                //post.setThread(thread.getId());
-                //user = userDAO.getUserbyNickname(post.getAuthor());
-//            System.out.println(thread.getId());
-//                    System.out.println(post.getThread());
-                //if (postDAO.getAuthorByNickname(post.getAuthor()).size() == 0) {
-//                if (user == null) {
-//                    return 404;
-//                }
                 Post parentPost = getPostbyId((int) post.getParent());
                 Post check = getChild(post.getParent());
                 if ((parentPost == null || check == null) &&
                         post.getParent() != 0 || (check != null && check.getThread() != post.getThread())) {
                     return 409;
                 }
-                //insertUser(thread, /*forum,*/ user);
-                ///////
-                //Post parentPost = getPostbyId((int)post.getParent());
                 post.setCreated(posts.get(0).getCreated());
-//            //
-                //Long idx = jdbc.queryForObject("SELECT nextval('posts_id_seq')", Long.class);
-                //List<Long> ids = jdbc.query("select nextval('posts_id_seq') from generate_series(1, ?)", new Object[]{posts.size()}, (rs, rowNum) -> rs.getLong(1));
-                //post.setId(idx);
                 Long ids = jdbc.queryForObject("SELECT nextval('posts_id_seq')", Long.class);
                 if (post.getParent() == 0) {
-                    //Long id = jdbc.queryForObject("select nextval('posts_id_seq')", Long.class);
                     ArrayList arr = new ArrayList<>(Arrays.asList(ids));
-                    //arr.add(ids.get(i));
                     arrObj = arr;
-                    //System.out.print(ids + "ids" + "\n");
-                    //pst.setArray(1, con.createArrayOf("int", arr.toArray()));
                 } else {
                     ArrayList arr = new ArrayList<>(Arrays.asList(parentPost.getPath()));
-                    //arr.add(parentPost.getPath());
-                    //System.out.print(ids + "ids" + "\n");
                     arr.add(ids);
                     arrObj = arr;
-                    //pst.setArray(1, con.createArrayOf("int", arr.toArray()));
                 }
 
                 post.setId(ids);
                 post.setPath(arrObj.toArray());
                 ArrayList finalArrObj = arrObj;
-                //Integer finalInd = ind;
-                //Long finalResult = result;
-//            jdbc.batchUpdate(SQL, new BatchPreparedStatementSetter() {
-//                @Override
-//                public void setValues(PreparedStatement pst, int i) throws SQLException {
-//                    System.out.print(finalResult+"final"+"\n");
-//
-//                    pst.setString(1, post.getAuthor());
-//                    pst.setString(2, post.getForum());
-//                    pst.setBoolean(3, post.getIsEdited());
-//                    pst.setString(4, post.getMessage());
-//                    pst.setLong(5, post.getThread());
-//                    pst.setLong(6, post.getParent());
-//                    pst.setString(7, post.getCreated());
-//                    pst.setLong(8, finalResult);
-//                    pst.setArray(9, con.createArrayOf("int", finalArrObj.toArray()));
-//
-//                }
-//
-//                @Override
-//                public int getBatchSize() {
-//                    return posts.size();
-//                }
-//            });
-//                jdbc.update(con -> {
-//                    PreparedStatement pst = con.prepareStatement(
-//                            "INSERT INTO posts (author, forum, isedited, message, thread, parent, created, path)" +
-//                                    " VALUES(?,?,?,?,?,?,?::TIMESTAMP,?) RETURNING id");
                 pst.setLong(1, post.getId());
                 pst.setString(2, post.getAuthor());
                 pst.setString(3, post.getForum());
@@ -139,26 +65,10 @@ public class PostDAO {
                 pst.setLong(7, post.getParent());
                 pst.setString(8, post.getCreated());
                 pst.setArray(9, con.createArrayOf("int", finalArrObj.toArray()));
-                // return pst;
-                // });
 
-            pst.addBatch();
-
-
-                //post.setPath(arrObj);
-                //object = new Object[] {post.getAuthor(), post.getForum(), post.getIsEdited(), post.getMessage(), post.getThread(), post.getParent(), post.getCreated()};
-                //post.setId(jdbc.queryForObject(SQL, object, Long.class));
-                //post.setId(jdbc.queryForObject(SQL, POST_MAPPER, post.getAuthor(), post.getForum(), post.getIsEdited(), post.getMessage(), post.getThread(), post.getParent(), post.getCreated()));
-
-                //setPath(parentPost, post);
-                //ind++;
-//                jdbc.update("INSERT INTO users_forum (forum, nick) VALUES (?,?) ON CONFLICT (forum, nick) DO NOTHING", thread.getForum(), post.getAuthor());
-//                final String SQL_posts = "UPDATE \"forums\" SET posts = posts + 1 WHERE slug::CITEXT = ?::CITEXT";
-//                jdbc.update(SQL_posts, thread.getForum());
-
+                pst.addBatch();
             }
             pst.executeBatch();
-            //con.commit();
             con.close();
 
             final String SQL_posts = "UPDATE \"forums\" SET posts = posts + ? WHERE slug::CITEXT = ?::CITEXT";
@@ -221,14 +131,11 @@ public class PostDAO {
             post.setThread(resultSet.getLong("thread"));
             post.setParent(resultSet.getLong("parent"));
             Array path = resultSet.getArray("path");
-            //post.setPath((Object[]) resultSet.getObject("path"));
             post.setPath((Object[])path.getArray());
             Timestamp created = resultSet.getTimestamp("created");
             SimpleDateFormat format = new SimpleDateFormat(
                     "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
-            //format.setTimeZone(TimeZone.getTimeZone("UTC"));
             post.setCreated(format.format(created));
-           // post.setCreated(resultSet.getString("created"));
             post.setId(resultSet.getLong("id"));
             return post;
         }

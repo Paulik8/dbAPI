@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -50,24 +49,20 @@ public class UserController {
          @PostMapping(path = "/{nickname}/profile")
         public ResponseEntity setUserProfile(@PathVariable(name = "nickname") String nick,
                                          @RequestBody User body) {
-            User user;
+            Integer res;
             body.setNickname(nick);
-//            try {
-//                userDAO.getUserbyNickname(nick);
-//            } catch (DataAccessException e) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cant find user"));
-//            }
-             if (userDAO.getUserbyNickname(nick) == null) {
+            User user = userDAO.getUserbyNickname(nick);
+             if (user == null) {
                  return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cant find user"));
              }
             try {
-                userDAO.changeUser(body);
+                res = userDAO.changeUser(body);
             } catch (DuplicateKeyException e) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("Conflict user"));
             }
-//            catch (DataAccessException e) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Cant find user"));
-//            }
+            if (res == 202) {
+                 return ResponseEntity.ok(user);
+            }
              return ResponseEntity.ok(userDAO.getUserbyNickname(nick));
         }
 }
