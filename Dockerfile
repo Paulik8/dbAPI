@@ -20,6 +20,8 @@ RUN /etc/init.d/postgresql start &&\
           RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
           RUN echo "synchronous_commit = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
           RUN echo "fsync = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
+          RUN echo "shared_buffers = 128MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+          RUN echo "effective_cache_size = 256MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
 
 EXPOSE 5432
 
